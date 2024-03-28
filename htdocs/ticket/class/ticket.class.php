@@ -1027,7 +1027,7 @@ class Ticket extends CommonObject
 		$sql .= " fk_user_assign=".(isset($this->fk_user_assign) ? $this->fk_user_assign : "null").",";
 		$sql .= " subject=".(isset($this->subject) ? "'".$this->db->escape($this->subject)."'" : "null").",";
 		$sql .= " message=".(isset($this->message) ? "'".$this->db->escape($this->message)."'" : "null").",";
-		$sql .= " fk_statut=".(isset($this->fk_statut) ? $this->fk_statut : "null").",";
+		$sql .= " fk_statut=".(isset($this->fk_statut) ? $this->fk_statut : "0").",";
 		$sql .= " resolution=".(isset($this->resolution) ? $this->resolution : "null").",";
 		$sql .= " progress=".(isset($this->progress) ? "'".$this->db->escape($this->progress)."'" : "null").",";
 		$sql .= " timing=".(isset($this->timing) ? "'".$this->db->escape($this->timing)."'" : "null").",";
@@ -1424,8 +1424,8 @@ class Ticket extends CommonObject
 		// phpcs:enable
 		global $langs, $hookmanager;
 
-		$labelStatus = !empty($status) ? $this->labelStatus[$status] : '';
-		$labelStatusShort = !empty($status) ? $this->labelStatusShort[$status] : '';
+		$labelStatus = (isset($status) && !empty($this->labelStatus[$status])) ? $this->labelStatus[$status] : '';
+		$labelStatusShort = (isset($status) && !empty($this->labelStatusShort[$status]))? $this->labelStatusShort[$status] : '';
 
 		switch ($status) {
 			case self::STATUS_NOT_READ:
