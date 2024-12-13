@@ -185,6 +185,11 @@ class FactureRec extends CommonInvoice
 	public $mode_reglement_code; // Code in llx_c_paiement
 
 	/**
+	 * @var int			ID of bank account to use if invoice is set for direct debit payment (see PAYMENTCODETOEDITSOCIETERIB)
+	 */
+	public $fk_societe_rib;
+
+	/**
 	 * @var int
 	 */
 	public $suspended; // status
@@ -198,12 +203,10 @@ class FactureRec extends CommonInvoice
 	 */
 	public $generate_pdf; // 1 to generate PDF on invoice generation (default)
 
-	/**
-	 * @var int
-	 */
-	public $fk_societe_rib;
+
 
 	const PAYMENTCODETOEDITSOCIETERIB = "PRE";
+
 
 	/**
 	 *  'type' if the field format ('integer', 'integer:ObjectClass:PathToClass[:AddCreateButtonOrNot[:Filter]]', 'varchar(x)', 'double(24,8)', 'real', 'price', 'text', 'html', 'date', 'datetime', 'timestamp', 'duration', 'mail', 'phone', 'url', 'password')
@@ -231,7 +234,7 @@ class FactureRec extends CommonInvoice
 
 	// BEGIN MODULEBUILDER PROPERTIES
 	/**
-	 * @var array<string,array{type:string,label:string,enabled:int<0,2>|string,position:int,notnull?:int,visible:int<-2,5>|string,noteditable?:int<0,1>,default?:string,index?:int,foreignkey?:string,searchall?:int<0,1>,isameasure?:int<0,1>,css?:string,csslist?:string,help?:string,showoncombobox?:int<0,2>,disabled?:int<0,1>,arrayofkeyval?:array<int|string,string>,comment?:string,validate?:int<0,1>}>  Array with all fields and their property. Do not use it as a static var. It may be modified by constructor.
+	 * @var array<string,array{type:string,label:string,enabled:int<0,2>|string,position:int,notnull?:int,visible:int<-5,5>|string,alwayseditable?:int<0,1>,noteditable?:int<0,1>,default?:string,index?:int,foreignkey?:string,searchall?:int<0,1>,isameasure?:int<0,1>,css?:string,csslist?:string,help?:string,showoncombobox?:int<0,4>,disabled?:int<0,1>,arrayofkeyval?:array<int|string,string>,autofocusoncreate?:int<0,1>,comment?:string,copytoclipboard?:int<1,2>,validate?:int<0,1>,showonheader?:int<0,1>}>  Array with all fields and their property. Do not use it as a static var. It may be modified by constructor.
 	 */
 	public $fields = array(
 		'rowid' => array('type' => 'integer', 'label' => 'TechnicalID', 'enabled' => 1, 'visible' => -1, 'notnull' => 1, 'position' => 10),
@@ -567,7 +570,7 @@ class FactureRec extends CommonInvoice
 		$sql .= " localtax1 = ".((float) $this->total_localtax1).",";
 		$sql .= " localtax2 = ".((float) $this->total_localtax2).",";
 		$sql .= " total_ht = ".((float) $this->total_ht).",";
-		$sql .= " total_ttc = ".((float) $this->total_ttc);
+		$sql .= " total_ttc = ".((float) $this->total_ttc).",";
 		$sql .= " fk_societe_rib = ".((int) $this->fk_societe_rib);
 		// TODO Add missing fields
 		$sql .= " WHERE rowid = ".((int) $this->id);
@@ -1169,19 +1172,19 @@ class FactureRec extends CommonInvoice
 		}
 
 		// Clean parameters
-		$remise_percent = price2num($remise_percent);
-		$qty = price2num($qty);
+		$remise_percent = (float) price2num($remise_percent);
+		$qty = (float) price2num($qty);
 		if (empty($info_bits)) {
 			$info_bits = 0;
 		}
-		$pu_ht          = price2num($pu_ht);
-		$pu_ttc         = price2num($pu_ttc);
-		$pu_ht_devise = price2num($pu_ht_devise);
+		$pu_ht = (float) price2num($pu_ht);
+		$pu_ttc = (float) price2num($pu_ttc);
+		$pu_ht_devise = (float) price2num($pu_ht_devise);
 		if (!preg_match('/\((.*)\)/', (string) $txtva)) {
 			$txtva = price2num($txtva); // $txtva can have format '5.0(XXX)' or '5'
 		}
-		$txlocaltax1	= price2num($txlocaltax1);
-		$txlocaltax2	= price2num($txlocaltax2);
+		$txlocaltax1 = price2num($txlocaltax1);
+		$txlocaltax2 = price2num($txlocaltax2);
 		if (empty($txlocaltax1)) {
 			$txlocaltax1 = 0;
 		}
@@ -1308,7 +1311,7 @@ class FactureRec extends CommonInvoice
 		if (empty($this->date_when)) {
 			return false;
 		}
-		return dol_time_plus_duree($this->date_when, $this->frequency, $this->unit_frequency);
+		return dol_time_plus_duree($this->date_when, $this->frequency, $this->unit_frequency, 1);
 	}
 
 	/**
@@ -1475,6 +1478,7 @@ class FactureRec extends CommonInvoice
 					$nb_create++;
 					$this->output .= $langs->trans("InvoiceGeneratedFromTemplate", $facture->ref, $facturerec->ref)."\n";
 				} else {
+					$this->output .= $langs->trans("InvoiceGeneratedFromTemplateError", $facture->ref, $facturerec->ref, $this->error)."\n";
 					$this->db->rollback("createRecurringInvoices Process invoice template id=".$facturerec->id.", ref=".$facturerec->ref);
 				}
 
@@ -1827,7 +1831,7 @@ class FactureRec extends CommonInvoice
 
 		if (empty($option) || $option != 'nolines') {
 			// Lines
-			$nbp = 5;
+			$nbp = min(1000, GETPOSTINT('nblines') ? GETPOSTINT('nblines') : 5);	// We can force the nb of lines to test from command line (but not more than 1000)
 			$xnbp = 0;
 			while ($xnbp < $nbp) {
 				$line = new FactureLigne($this->db);

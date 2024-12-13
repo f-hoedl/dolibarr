@@ -169,7 +169,7 @@ class BlockedLog
 		// Customer Invoice/Facture / Payment
 		if (isModEnabled('invoice')) {
 			$this->trackedevents['BILL_VALIDATE'] = 'logBILL_VALIDATE';
-			$this->trackedevents['BILL_DELETE'] = 'logBILL_DELETE';
+			//$this->trackedevents['BILL_UPDATE'] = 'logBILL_UPDATE';
 			$this->trackedevents['BILL_SENTBYMAIL'] = 'logBILL_SENTBYMAIL';
 			$this->trackedevents['DOC_DOWNLOAD'] = 'BlockedLogBillDownload';
 			$this->trackedevents['DOC_PREVIEW'] = 'BlockedLogBillPreview';
@@ -532,7 +532,8 @@ class BlockedLog
 					continue; // Discard some properties
 				}
 				if (!in_array($key, array(
-					'ref', 'ref_client', 'ref_supplier', 'date', 'datef', 'datev', 'type', 'total_ht', 'total_tva', 'total_ttc', 'localtax1', 'localtax2', 'revenuestamp', 'datepointoftax', 'note_public', 'lines'
+					'ref', 'ref_client', 'ref_supplier', 'date', 'datef', 'datev', 'type', 'total_ht', 'total_tva', 'total_ttc', 'localtax1', 'localtax2', 'revenuestamp', 'datepointoftax', 'note_public', 'lines',
+					'module_source', 'pos_source'
 				))) {
 					continue; // Discard if not into a dedicated list
 				}
@@ -1088,23 +1089,47 @@ class BlockedLog
 
 		$previoussignature = '';
 
-		$sql = "SELECT rowid, signature FROM ".MAIN_DB_PREFIX."blockedlog";
-		$sql .= " WHERE entity = ".((int) $conf->entity);
+		// Fast search of previous record by searching with beforeid - 1. This is very fast and will work 99% of time.
 		if ($beforeid) {
-			$sql .= " AND rowid < ".(int) $beforeid;
-		}
-		$sql .= " ORDER BY rowid DESC LIMIT 1";
-		$sql .= ($withlock ? " FOR UPDATE " : "");
+			$sql = "SELECT rowid, signature FROM ".MAIN_DB_PREFIX."blockedlog";
+			$sql .= " WHERE entity = ".((int) $conf->entity);
+			$sql .= " AND rowid = ".((int) $beforeid - 1);
+			$sql .= ($withlock ? " FOR UPDATE " : "");
 
-		$resql = $this->db->query($sql);
-		if ($resql) {
-			$obj = $this->db->fetch_object($resql);
-			if ($obj) {
-				$previoussignature = $obj->signature;
+			$resql = $this->db->query($sql);
+			if ($resql) {
+				$obj = $this->db->fetch_object($resql);
+				if ($obj) {
+					$previoussignature = $obj->signature;
+				}
+			} else {
+				dol_print_error($this->db);
+				exit;
 			}
-		} else {
-			dol_print_error($this->db);
-			exit;
+		}
+
+		if (empty($previoussignature)) {
+			$sql = "SELECT rowid, signature FROM ".MAIN_DB_PREFIX."blockedlog";
+			if ($beforeid) {
+				$sql.= $this->db->hintindex('entity_rowid', 1);
+			}
+			$sql .= " WHERE entity = ".((int) $conf->entity);
+			if ($beforeid) {
+				$sql .= " AND rowid < ".(int) $beforeid;
+			}
+			$sql .= " ORDER BY rowid DESC LIMIT 1";
+			$sql .= ($withlock ? " FOR UPDATE " : "");
+
+			$resql = $this->db->query($sql);
+			if ($resql) {
+				$obj = $this->db->fetch_object($resql);
+				if ($obj) {
+					$previoussignature = $obj->signature;
+				}
+			} else {
+				dol_print_error($this->db);
+				exit;
+			}
 		}
 
 		if (empty($previoussignature)) {

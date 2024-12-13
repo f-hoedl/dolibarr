@@ -312,8 +312,8 @@ $tooltiponpricemultiprice = '';
 $tooltiponpriceend = '';
 $tooltiponpriceendmultiprice = '';
 if (!getDolGlobalString('MAIN_OPTIMIZEFORTEXTBROWSER')) {
-	$tooltiponprice = $langs->transcountry("TotalHT", $mysoc->country_code).'='.price($line->total_ht, 0, '', 0, 0);
-	$tooltiponpricemultiprice = $langs->transcountry("TotalHT", $mysoc->country_code).'='.price($line->multicurrency_total_ht, 0, '', 0, 0);
+	$tooltiponprice .= $langs->transcountry("TotalHT", $mysoc->country_code).'='.price($line->total_ht, 0, '', 0, 0);
+	$tooltiponpricemultiprice .= $langs->transcountry("TotalHT", $mysoc->country_code).'='.price($line->multicurrency_total_ht, 0, '', 0, 0);
 	$tooltiponprice .= '<br>'.$langs->transcountry("TotalVAT", ($senderissupplier ? $object->thirdparty->country_code : $mysoc->country_code)).'='.price($line->total_tva, 0, '', 0, 0);
 	$tooltiponpricemultiprice .= '<br>'.$langs->transcountry("TotalVAT", ($senderissupplier ? $object->thirdparty->country_code : $mysoc->country_code)).'='.price($line->multicurrency_total_tva, 0, '', 0, 0);
 	if (is_object($object->thirdparty)) {
@@ -346,6 +346,19 @@ if (!getDolGlobalString('MAIN_OPTIMIZEFORTEXTBROWSER')) {
 	}
 	$tooltiponprice .= '<br>'.$langs->transcountry("TotalTTC", $mysoc->country_code).'='.price($line->total_ttc, 0, '', 0, 0);
 	$tooltiponpricemultiprice .= '<br>'.$langs->transcountry("TotalTTC", $mysoc->country_code).'='.price($line->multicurrency_total_ttc, 0, '', 0, 0);
+
+	if (!empty($line->special_code) || $line->product_type == 9) {
+		$tooltiponprice .= '<br>';
+		$tooltiponpricemultiprice .= '<br>';
+		if (!empty($line->special_code)) {
+			$tooltiponprice .= '<br>'.$langs->trans("SpecialLine").' : '.getLabelSpecialCode($line->special_code);
+			$tooltiponpricemultiprice .= '<br>'.$langs->trans("SpecialLine").' : '.getLabelSpecialCode($line->special_code);
+		}
+		if ($line->product_type == 9) {
+			$tooltiponprice .= '<br>'.$langs->trans("SpecialLine").' : '.$langs->trans("GroupingLine");
+			$tooltiponpricemultiprice .= '<br>'.$langs->trans("SpecialLine").' : '.$langs->trans("GroupingLine");
+		}
+	}
 
 	$tooltiponprice = '<span class="classfortooltip" title="'.dol_escape_htmltag($tooltiponprice).'">';
 	$tooltiponpricemultiprice = '<span class="classfortooltip" title="'.dol_escape_htmltag($tooltiponpricemultiprice).'">';
@@ -454,7 +467,7 @@ if ($usemargins && isModEnabled('margin') && empty($user->socid)) {
 		<td class="linecolmargin2 nowrap margininfos right"><?php $coldisplay++; ?><?php print(($line->pa_ht == 0) ? 'n/a' : price(price2num($line->marge_tx, 'MT')).'%'); ?></td>
 	<?php }
 	if (getDolGlobalString('DISPLAY_MARK_RATES') && $user->hasRight('margins', 'liretous')) {?>
-		<td class="linecolmargin2 nowrap margininfos right"><?php $coldisplay++; ?><?php print price(price2num($line->marque_tx, 'MT')).'%'; ?></td>
+		<td class="linecolmark1 nowrap margininfos right"><?php $coldisplay++; ?><?php print price(price2num($line->marque_tx, 'MT')).'%'; ?></td>
 	<?php }
 }
 
