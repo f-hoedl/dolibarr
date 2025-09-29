@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit
+    bootstrap="test/bootstrap.php"
+    colors="true"
+    convertErrorsToExceptions="true"
+    convertNoticesToExceptions="false"
+    convertWarningsToExceptions="false"
+    processIsolation="false"
+    stopOnFailure="false"
+    backupGlobals="false"
+    backupStaticAttributes="false"
+    verbose="true">
+    
+    <testsuites>
+        <testsuite name="Dolibarr Test Suite">
+            <directory>./test/phpunit/</directory>
+        </testsuite>
+    </testsuites>
+    
+    <filter>
+        <whitelist processUncoveredFilesFromWhitelist="true">
+            <directory suffix=".php">./htdocs</directory>
+            <exclude>
+                <directory>./htdocs/includes</directory>
+                <directory>./vendor</directory>
+            </exclude>
+        </whitelist>
+    </filter>
+    
+    <logging>
+        <log type="coverage-html" target="test/coverage/html"/>
+        <log type="coverage-clover" target="test/coverage/clover.xml"/>
+    </logging>
+</phpunit>
