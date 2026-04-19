@@ -734,151 +734,11 @@ class ActionsAnexum
         }
     }
 
-    /**
-     * Hook completeSubstitutionsArray: for every sellist / select extrafield on
-     * the object being mailed, expose an extra
-     * `__EXTRAFIELD_<NAME>_LABEL__` token that resolves the dictionary rowid
-     * to its human-readable label. Core only exposes the raw rowid, which
-     * produces unreadable tokens like "2" for "LWL/Fiber" in email templates.
-     *
-     * ClickUp 869ab3xx9. Generic \u2014 works for every module's templates, not
-     * just the Fertigstellungsmeldung.
-     *
-     * @param   array         $parameters   Hook metadatas
-     * @param   CommonObject  $object       Object being mailed
-     * @param   string        $action       Current action
-     * @param   HookManager   $hookmanager  Hook manager
-     * @return  int                         0
-     */
-    public function completeSubstitutionsArray($parameters, &$object, &$action, $hookmanager)
-    {
-        global $db, $extrafields;
-
-        if (!is_object($object) || empty($object->table_element) || empty($object->id)) {
-            return 0;
-        }
-        if (!isset($parameters['substitutionarray']) || !is_array($parameters['substitutionarray'])) {
-            return 0;
-        }
-
-        require_once DOL_DOCUMENT_ROOT . '/core/class/extrafields.class.php';
-
-        if (!is_object($extrafields)) {
-            $extrafields = new ExtraFields($db);
-        }
-        $extrafields->fetch_name_optionals_label($object->table_element, true);
-
-        $attrs = $extrafields->attributes[$object->table_element] ?? null;
-        if (!is_array($attrs) || empty($attrs['label']) || !is_array($attrs['label'])) {
-            return 0;
-        }
-
-        // Ensure optionals are loaded on the object.
-        if (empty($object->array_options) && method_exists($object, 'fetch_optionals')) {
-            $object->fetch_optionals();
-        }
-
-        foreach ($attrs['label'] as $key => $label) {
-            $type  = $attrs['type'][$key] ?? '';
-            $param = $attrs['param'][$key] ?? array();
-            if (!in_array($type, array('sellist', 'select'), true)) {
-                continue;
-            }
-            $raw = $object->array_options['options_' . $key] ?? null;
-            if ($raw === null || $raw === '') {
-                $parameters['substitutionarray']['__EXTRAFIELD_' . strtoupper($key) . '_LABEL__'] = '';
-                continue;
-            }
-
-            $resolved = $this->resolveExtrafieldLabel($type, $param, $raw);
-            $parameters['substitutionarray']['__EXTRAFIELD_' . strtoupper($key) . '_LABEL__'] = $resolved;
-        }
-
-        // For a contract being mailed, also surface the linked order ref as
-        // __ORDER_REF__ (not exposed by core). Useful in templates like the
-        // Fertigstellungsmeldung where both Vertragsnummer and Auftragsnummer
-        // need to appear.
-        if ($object->element === 'contrat' && method_exists($object, 'fetchObjectLinked')) {
-            $object->fetchObjectLinked('', 'commande');
-            if (!empty($object->linkedObjects['commande']) && is_array($object->linkedObjects['commande'])) {
-                $firstOrder = reset($object->linkedObjects['commande']);
-                if (is_object($firstOrder) && !empty($firstOrder->ref)) {
-                    $parameters['substitutionarray']['__ORDER_REF__'] = (string) $firstOrder->ref;
-                }
-            }
-        }
-
-        // Propagate the enriched array back to the caller via the hookmanager
-        // so that the surrounding complete_substitutions_array() caller picks
-        // up the new entries. Core code merges hookmanager->resArray on return.
-        if (is_object($hookmanager)) {
-            foreach ($parameters['substitutionarray'] as $k => $v) {
-                if (strpos($k, '__EXTRAFIELD_') === 0 && substr($k, -8) === '_LABEL__') {
-                    $hookmanager->resArray[$k] = $v;
-                }
-            }
-            if (isset($parameters['substitutionarray']['__ORDER_REF__'])) {
-                $hookmanager->resArray['__ORDER_REF__'] = $parameters['substitutionarray']['__ORDER_REF__'];
-            }
-        }
-
-        return 0;
-    }
-
-    /**
-     * Resolve a sellist / select extrafield raw value to its human label.
-     *
-     * @param  string $type   'sellist' or 'select'
-     * @param  array  $param  Extrafield options array
-     * @param  mixed  $raw    Stored raw value (rowid for sellist, key for select)
-     * @return string         Resolved label, or raw value if no resolution possible
-     */
-    private function resolveExtrafieldLabel($type, $param, $raw)
-    {
-        global $db;
-
-        // --- select: options are a plain [key => label] array in $param['options']
-        if ($type === 'select') {
-            if (isset($param['options']) && is_array($param['options']) && isset($param['options'][$raw])) {
-                return (string) $param['options'][$raw];
-            }
-            return (string) $raw;
-        }
-
-        // --- sellist: options is a single-entry array whose key is a config string
-        //     like "table:labelcol:rowidcol:filter:sortfield"
-        if (!isset($param['options']) || !is_array($param['options'])) {
-            return (string) $raw;
-        }
-        $optkey = array_key_first($param['options']);
-        if (empty($optkey)) {
-            return (string) $raw;
-        }
-
-        // Parse "table:labelcol:rowidcol:filter" style
-        $pieces    = explode(':', $optkey);
-        $table     = $pieces[0] ?? '';
-        $labelcol  = $pieces[1] ?? 'label';
-        $idcol     = $pieces[2] ?? 'rowid';
-        if (empty($table)) {
-            return (string) $raw;
-        }
-
-        $sql = "SELECT " . $db->sanitize($labelcol) . " AS l"
-            . " FROM " . MAIN_DB_PREFIX . $db->sanitize($table)
-            . " WHERE " . $db->sanitize($idcol) . " = '" . $db->escape((string) $raw) . "'"
-            . " LIMIT 1";
-        $resql = $db->query($sql);
-        if ($resql) {
-            if ($obj = $db->fetch_object($resql)) {
-                $db->free($resql);
-                return (string) $obj->l;
-            }
-            $db->free($resql);
-        }
-
-        return (string) $raw;
-    }
+    // Substitution-token resolution (__EXTRAFIELD_*_LABEL__ / __ORDER_REF__ / __DATE__)
+    // moved to lib/functions_anexum.lib.php. Dolibarr core's
+    // complete_substitutions_array() only calls standalone functions registered
+    // via $conf->modules_parts['substitutions'] — class-method hooks are never
+    // reached on that code path. See functions.lib.php:10240.
 
     /**
      * On the ticket "Messaging" view, inject a toggle that filters out rows
@@ -898,37 +758,35 @@ class ActionsAnexum
         global $delayedhtmlcontent;
 
         $ctx = isset($parameters['currentcontext']) ? $parameters['currentcontext'] : '';
-        if ($ctx !== 'ticketmessaging') {
+        // Fire on BOTH the messaging tab and the card's "last events" block.
+        if (!in_array($ctx, array('ticketmessaging', 'ticketcard'), true)) {
             return;
         }
 
-        // The core agenda renderer prints one `<tr>` per event on messaging.php
-        // and each row contains either a `user-info` anchor referencing the
-        // author or the action's creator info. We walk the rows on
-        // DOMContentLoaded and mark any row whose author link text equals one
-        // of the bot logins as "bot". A floating toggle above the list lets
-        // the user hide those rows.
+        // The core agenda renderer prints one `<tr>` per event on both
+        // messaging.php and the card's event summary. We walk rows on
+        // DOMContentLoaded, tag ones authored by a bot login, insert a
+        // toggle above the list, and persist the choice in localStorage
+        // so the user does not have to re-tick on every page load.
         $js = <<<'JS'
 jQuery(function($) {
     if (window.__anxHumanToggleInit) { return; }
     window.__anxHumanToggleInit = true;
 
-    // Login names of API / bot users whose entries should be hidden by the toggle.
+    // Login names of API / bot users whose entries the toggle hides.
     // Extend here if new service accounts land.
     var BOT_LOGINS = ["API"];
+    var STORAGE_KEY = "anxHumanOnly";
 
     function markBotRows() {
         var rows = $("table.noborder tr, tr.oddeven, .info-box");
         var botCount = 0, humanCount = 0;
-        rows.each(function() {
+        rows.each(function () {
             var $row = $(this);
             var text = $row.text();
             var isBot = false;
             for (var i = 0; i < BOT_LOGINS.length; i++) {
-                if (text.indexOf(BOT_LOGINS[i]) !== -1) {
-                    isBot = true;
-                    break;
-                }
+                if (text.indexOf(BOT_LOGINS[i]) !== -1) { isBot = true; break; }
             }
             if (isBot) {
                 $row.attr("data-anx-bot", "1");
@@ -941,21 +799,22 @@ jQuery(function($) {
         return { bots: botCount, humans: humanCount };
     }
 
-    // Find the best anchor point for the toggle: the container that holds
-    // the event list. messaging.php uses the standard "info-box" / "noborder"
-    // pattern, so we attach above the first such wrapper.
-    var $anchor = $("table.noborder").first();
-    if (!$anchor.length) {
-        $anchor = $(".info-box").first();
-    }
-    if (!$anchor.length) {
-        return;
+    function applyHiding(on) {
+        $("[data-anx-bot='1']").each(function () { $(this).toggle(!on); });
     }
 
+    // Anchor above the first event list we find (messaging tab or card).
+    var $anchor = $("table.noborder").first();
+    if (!$anchor.length) { $anchor = $(".info-box").first(); }
+    if (!$anchor.length) { return; }
+
     var counts = markBotRows();
+    var persisted;
+    try { persisted = window.localStorage.getItem(STORAGE_KEY) === "1"; } catch (e) { persisted = false; }
 
     var $toggle = $("<div class=\"anx-human-toggle\" style=\"margin: 8px 0; padding: 8px; background: #f6f8fa; border: 1px solid #d0d7de; border-radius: 4px; font-size: 13px;\"></div>");
     var $checkbox = $("<input type=\"checkbox\" id=\"anx-human-only\" style=\"margin-right: 6px; vertical-align: middle;\">");
+    if (persisted) { $checkbox.prop("checked", true); }
     var $label = $("<label for=\"anx-human-only\" style=\"cursor: pointer; user-select: none;\"></label>");
     $label.append($checkbox);
     $label.append(document.createTextNode("Show only human interactions (" + counts.humans + " human, " + counts.bots + " automated)"));
@@ -967,12 +826,12 @@ jQuery(function($) {
     }
 
     $anchor.before($toggle);
+    if (persisted) { applyHiding(true); }
 
-    $checkbox.on("change", function() {
+    $checkbox.on("change", function () {
         var on = this.checked;
-        $("[data-anx-bot='1']").each(function() {
-            $(this).toggle(!on);
-        });
+        applyHiding(on);
+        try { window.localStorage.setItem(STORAGE_KEY, on ? "1" : "0"); } catch (e) { /* ignore quota */ }
     });
 });
 JS;
@@ -999,7 +858,10 @@ JS;
         if ($ctx !== 'ticketcard') {
             return;
         }
-        if ($action !== 'presend') {
+        // ticket/card.php normalises the presend flow to two action names:
+        // 'presend' (reply mail from the tab) and 'presend_addmessage'
+        // (internal message). Both reach core/tpl/card_presend.tpl.php.
+        if (!in_array($action, array('presend', 'presend_addmessage'), true)) {
             return;
         }
 
@@ -1018,6 +880,7 @@ JS;
         $_GET['sendtocc']     = $cc;
         $_POST['sendtocc']    = $cc;
         $_REQUEST['sendtocc'] = $cc;
+        dol_syslog('ActionsAnexum::prefillTicketCcMonitoring seeded sendtocc=' . $cc . ' (action=' . $action . ')', LOG_DEBUG);
     }
 
     /**
@@ -1035,18 +898,23 @@ JS;
         $ctx = isset($parameters['currentcontext']) ? $parameters['currentcontext'] : '';
 
         if ($ctx === 'contractlist') {
-            // Contract list aliases llx_contrat as "c". Pick the newest open ticket ref.
+            // Contract list aliases llx_contrat as "c". Pick the newest open ticket ref + rowid.
             $this->resprints .= ", (SELECT tk.ref FROM " . MAIN_DB_PREFIX . "ticket as tk"
                 . " WHERE tk.fk_contract = c.rowid AND tk.fk_statut < 8"
                 . " ORDER BY tk.rowid DESC LIMIT 1) as anx_open_ticket_ref";
+            $this->resprints .= ", (SELECT tk.rowid FROM " . MAIN_DB_PREFIX . "ticket as tk"
+                . " WHERE tk.fk_contract = c.rowid AND tk.fk_statut < 8"
+                . " ORDER BY tk.rowid DESC LIMIT 1) as anx_open_ticket_id";
         } elseif ($ctx === 'contactlist') {
             // Contact list aliases llx_socpeople as "p". Walk element_contact to find
             // contracts this contact is linked to, then look up open tickets on them.
-            $this->resprints .= ", (SELECT tk.ref FROM " . MAIN_DB_PREFIX . "ticket as tk"
+            $base = " FROM " . MAIN_DB_PREFIX . "ticket as tk"
                 . " INNER JOIN " . MAIN_DB_PREFIX . "element_contact as ec ON ec.element_id = tk.fk_contract"
                 . " INNER JOIN " . MAIN_DB_PREFIX . "c_type_contact as tc ON tc.rowid = ec.fk_c_type_contact AND tc.element = 'contrat'"
                 . " WHERE ec.fk_socpeople = p.rowid AND tk.fk_statut < 8"
-                . " ORDER BY tk.rowid DESC LIMIT 1) as anx_open_ticket_ref";
+                . " ORDER BY tk.rowid DESC LIMIT 1";
+            $this->resprints .= ", (SELECT tk.ref" . $base . ") as anx_open_ticket_ref";
+            $this->resprints .= ", (SELECT tk.rowid" . $base . ") as anx_open_ticket_id";
         }
 
         return 0;
@@ -1098,19 +966,39 @@ JS;
         }
 
         $openRef = '';
-        if (isset($parameters['obj']) && is_object($parameters['obj']) && !empty($parameters['obj']->anx_open_ticket_ref)) {
-            $openRef = $parameters['obj']->anx_open_ticket_ref;
+        $openId  = 0;
+        if (isset($parameters['obj']) && is_object($parameters['obj'])) {
+            if (!empty($parameters['obj']->anx_open_ticket_ref)) {
+                $openRef = (string) $parameters['obj']->anx_open_ticket_ref;
+            }
+            if (!empty($parameters['obj']->anx_open_ticket_id)) {
+                $openId = (int) $parameters['obj']->anx_open_ticket_id;
+            }
         }
 
-        if ($openRef !== '') {
-            $tooltip = $langs->trans('AnexumOpenTicketOnContract', $openRef);
-            $this->resprints .= '<td class="center"><span class="badge badge-status4" title="' . dol_escape_htmltag($tooltip) . '" style="background:#d94f4f;color:#fff;padding:2px 6px;border-radius:50%;">&nbsp;&nbsp;</span></td>';
-        } else {
-            $tooltip = $langs->trans('AnexumNoOpenTicket');
-            $this->resprints .= '<td class="center"><span class="badge badge-status0" title="' . dol_escape_htmltag($tooltip) . '" style="background:#d0d0d0;color:#555;padding:2px 6px;border-radius:50%;">&nbsp;&nbsp;</span></td>';
-        }
-
+        $this->resprints .= $this->renderStatusBadgeCell($openRef, $openId, $langs);
         return 0;
+    }
+
+    /**
+     * Render a `<td>` with a clickable (when there's a ticket) status dot.
+     * Reused by list-row rendering (printFieldListValue) and by the
+     * card-side block (formObjectOptions).
+     *
+     * @param  string    $openRef  Ticket ref, empty when no open ticket
+     * @param  int       $openId   Ticket rowid for the href, 0 when none
+     * @param  Translate $langs
+     * @return string              HTML fragment
+     */
+    private function renderStatusBadgeCell($openRef, $openId, $langs)
+    {
+        if ($openRef !== '' && $openId > 0) {
+            $tooltip = $langs->trans('AnexumOpenTicketOnContract', $openRef);
+            $href    = DOL_URL_ROOT . '/ticket/card.php?id=' . $openId;
+            return '<td class="center"><a href="' . dol_escape_htmltag($href) . '" title="' . dol_escape_htmltag($tooltip) . '" style="display:inline-block;width:14px;height:14px;background:#d94f4f;border-radius:50%;"></a></td>';
+        }
+        $tooltip = $langs->trans('AnexumNoOpenTicket');
+        return '<td class="center"><span title="' . dol_escape_htmltag($tooltip) . '" style="display:inline-block;width:14px;height:14px;background:#d0d0d0;border-radius:50%;"></span></td>';
     }
 
     /**
@@ -1138,15 +1026,16 @@ JS;
         }
 
         $openRef = '';
+        $openId  = 0;
 
         if ($ctx === 'contractcard') {
-            $sql = "SELECT tk.ref FROM " . MAIN_DB_PREFIX . "ticket as tk"
+            $sql = "SELECT tk.rowid, tk.ref FROM " . MAIN_DB_PREFIX . "ticket as tk"
                 . " WHERE tk.fk_contract = " . ((int) $object->id)
                 . " AND tk.fk_statut < 8"
                 . " ORDER BY tk.rowid DESC LIMIT 1";
         } else {
             // contactcard
-            $sql = "SELECT tk.ref FROM " . MAIN_DB_PREFIX . "ticket as tk"
+            $sql = "SELECT tk.rowid, tk.ref FROM " . MAIN_DB_PREFIX . "ticket as tk"
                 . " INNER JOIN " . MAIN_DB_PREFIX . "element_contact as ec ON ec.element_id = tk.fk_contract"
                 . " INNER JOIN " . MAIN_DB_PREFIX . "c_type_contact as tc ON tc.rowid = ec.fk_c_type_contact AND tc.element = 'contrat'"
                 . " WHERE ec.fk_socpeople = " . ((int) $object->id)
@@ -1157,22 +1046,27 @@ JS;
         $resql = $db->query($sql);
         if ($resql) {
             if ($obj = $db->fetch_object($resql)) {
-                $openRef = $obj->ref;
+                $openRef = (string) $obj->ref;
+                $openId  = (int) $obj->rowid;
             }
             $db->free($resql);
         }
 
+        $href = ($openRef !== '' && $openId > 0) ? (DOL_URL_ROOT . '/ticket/card.php?id=' . $openId) : '';
         $label = $openRef !== ''
             ? dol_escape_htmltag($langs->trans('AnexumOpenTicketOnContract', $openRef))
             : dol_escape_htmltag($langs->trans('AnexumNoOpenTicket'));
         $color = $openRef !== '' ? '#d94f4f' : '#d0d0d0';
         $textcolor = $openRef !== '' ? '#fff' : '#555';
 
-        $this->resprints .= '<tr><td>' . $langs->trans('AnexumOpenTicketStatus') . '</td><td>'
-            . '<span title="' . $label . '" style="display:inline-block;background:' . $color . ';color:' . $textcolor . ';padding:3px 10px;border-radius:12px;">'
+        $inner = '<span title="' . $label . '" style="display:inline-block;background:' . $color . ';color:' . $textcolor . ';padding:3px 10px;border-radius:12px;">'
             . ($openRef !== '' ? dol_escape_htmltag($openRef) : $langs->trans('None'))
-            . '</span>'
-            . '</td></tr>';
+            . '</span>';
+        if ($href !== '') {
+            $inner = '<a href="' . dol_escape_htmltag($href) . '" style="text-decoration:none;">' . $inner . '</a>';
+        }
+
+        $this->resprints .= '<tr><td>' . $langs->trans('AnexumOpenTicketStatus') . '</td><td>' . $inner . '</td></tr>';
 
         return 0;
     }
