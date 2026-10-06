@@ -83,10 +83,12 @@ AnxhrSetupSectionTime = Time tracking
 AnxhrSetupSectionPrivacy = Data protection
 ANXHR_DEFAULT_KV = Default collective agreement (code)
 ANXHR_DEFAULT_KVTooltip = Code of the collective agreement used when a contract has none, for example SWOE.
-ANXHR_VACATION_IN_HOURS = Manage vacation in hours
-ANXHR_VACATION_IN_HOURSTooltip = If enabled, vacation entitlement is managed in hours instead of working days (useful for irregular part-time).
 ANXHR_CLOCK_ALLOW_SELF_CORRECTION_SAME_DAY = Allow self-correction on the same day
 ANXHR_CLOCK_ALLOW_SELF_CORRECTION_SAME_DAYTooltip = Employees may correct their own time entries of the current day without approval. Older entries always need an approved correction request.
+ANXHR_TIMEZONE = Company time zone
+ANXHR_TIMEZONETooltip = Time zone in which working days, night work, Sundays and public holidays are evaluated (independent of the server and user time zone). Default Europe/Vienna.
+ANXHR_ALLOW_SELF_APPROVAL = Allow self approval
+ANXHR_ALLOW_SELF_APPROVALTooltip = If enabled, a supervisor or HR may approve his own corrections and monthly sheets. Keep disabled for the four eyes principle (only for very small companies).
 ANXHR_PERIOD_AUTOCREATE_DAY = Day of month for creating monthly periods
 ANXHR_PERIOD_AUTOCREATE_DAYTooltip = On this day of the month the scheduled job creates the monthly periods of the previous month.
 ANXHR_RETENTION_YEARS = Retention period (years)
@@ -116,6 +118,7 @@ AnxhrCronNoReminder = No reminder to send today
 AnxhrCronRemindersSent = %s reminder(s) sent
 AnxhrDeadlineReminderLabel = HR deadline: %s (%s)
 AnxhrDeadlineReminderNote = Due on %s, in %s day(s).
+AnxhrDeadlineOverdueNote = Was due on %s, overdue for %s day(s).
 
 #
 # Notifications
@@ -131,6 +134,7 @@ AnxhrClockState = Clock state
 AnxhrClockStateIn = Clocked in
 AnxhrClockStateBreak = On break
 AnxhrClockStateOut = Clocked out
+AnxhrClockStateUnknown = Clock state unknown
 
 #
 # Cockpit
@@ -161,6 +165,7 @@ AnxhrNoContract = No employment contract recorded
 AnxhrOpenEnded = open-ended
 AnxhrEmploymentPeriod = Employment period
 AnxhrWeeklyHours = Weekly hours
+AnxhrKvCode = Collective agreement
 AnxhrEmploymentType = Employment type
 AnxhrEmploymentFulltime = Full-time
 AnxhrEmploymentParttime = Part-time

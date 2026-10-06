@@ -96,12 +96,23 @@ $item->defaultFieldValue = 'SWOE';
 $item->helpText = $langs->transnoentities('ANXHR_DEFAULT_KVTooltip');
 $item->cssClass = 'maxwidth200';
 
-$item = $formSetup->newItem('ANXHR_VACATION_IN_HOURS');
-$item->setAsYesNo();
-$item->helpText = $langs->transnoentities('ANXHR_VACATION_IN_HOURSTooltip');
+// Note: ANXHR_VACATION_IN_HOURS (vacation in hours) is not implemented yet, so it is not offered here (see README).
 
 // Section: time tracking
 $formSetup->newItem('AnxhrSetupSectionTime')->setAsTitle();
+
+$tzoptions = array();
+foreach (DateTimeZone::listIdentifiers() as $tzid) {
+	$tzoptions[$tzid] = $tzid;
+}
+$item = $formSetup->newItem('ANXHR_TIMEZONE');
+$item->setAsSelect($tzoptions);
+$item->defaultFieldValue = 'Europe/Vienna';
+$item->helpText = $langs->transnoentities('ANXHR_TIMEZONETooltip');
+
+$item = $formSetup->newItem('ANXHR_ALLOW_SELF_APPROVAL');
+$item->setAsYesNo();
+$item->helpText = $langs->transnoentities('ANXHR_ALLOW_SELF_APPROVALTooltip');
 
 $item = $formSetup->newItem('ANXHR_CLOCK_ALLOW_SELF_CORRECTION_SAME_DAY');
 $item->setAsYesNo();

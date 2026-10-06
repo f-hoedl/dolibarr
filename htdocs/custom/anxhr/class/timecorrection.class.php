@@ -194,23 +194,31 @@ class TimeCorrection extends CommonObject
 	}
 
 	/**
-	 * Approve the request: replace entries of the day and recompute the day.
+	 * Approve the request: replace the entries listed in old_json by the new entries and recompute the day.
+	 * Refused when the active entries of the day changed since the request (AnxhrErrorDayChangedSinceRequest).
 	 *
-	 * @param	User	$approver	Approver
-	 * @param	string	$comment	Comment
-	 * @return	int					<0 if KO, >0 if OK
+	 * @param	User	$approver		Approver
+	 * @param	string	$comment		Comment
+	 * @param	int		$selfsameday	1=self correction of the current day by the employee, allowed without
+	 *									approval when ANXHR_CLOCK_ALLOW_SELF_CORRECTION_SAME_DAY is set
+	 * @return	int						<0 if KO, >0 if OK
 	 */
-	public function approve(User $approver, $comment = '')
+	public function approve(User $approver, $comment = '', $selfsameday = 0)
 	{
 		if ((int) $this->status !== self::STATUS_REQUESTED) {
 			$this->error = 'ErrorBadStatus';
 			return -1;
 		}
-		if (!TimeEntry::userCanApproveFor($approver, (int) $this->fk_user)) {
+		$day = $this->getDayString();
+		$allowed = TimeEntry::userCanApproveFor($approver, (int) $this->fk_user);
+		if (!$allowed && $selfsameday && getDolGlobalInt('ANXHR_CLOCK_ALLOW_SELF_CORRECTION_SAME_DAY')
+			&& (int) $approver->id === (int) $this->fk_user && $day === TimeEntry::timestampToDay(dol_now())) {
+			$allowed = true;
+		}
+		if (!$allowed) {
 			$this->error = 'NotEnoughPermissions';
 			return -1;
 		}
-		$day = $this->getDayString();
 		$tday = new TimeDay($this->db);
 		$row = $tday->fetchRowForUserDay((int) $this->fk_user, $day);
 		if (is_array($row) && !empty($row['locked'])) {
@@ -218,18 +226,35 @@ class TimeCorrection extends CommonObject
 			return -1;
 		}
 
+		// The request replaces exactly the entries it was based on (old_json). If the active entries of the
+		// day changed in the meantime (clocking, other correction), the request is outdated and refused.
+		$entry = new TimeEntry($this->db);
+		$current = $entry->fetchForUserDay((int) $this->fk_user, $day);
+		if (!is_array($current)) {
+			$this->error = $entry->error;
+			return -1;
+		}
+		$ids = array();
+		foreach ($current as $c) {
+			$ids[] = (int) $c['id'];
+		}
+		$oldIds = array();
+		foreach ($this->getOldEntries() as $o) {
+			if (is_array($o) && isset($o['id'])) {
+				$oldIds[] = (int) $o['id'];
+			}
+		}
+		sort($ids);
+		sort($oldIds);
+		if ($ids !== $oldIds) {
+			$this->error = 'AnxhrErrorDayChangedSinceRequest';
+			return -1;
+		}
+
 		$this->db->begin();
 		$error = 0;
 
-		// Mark current active entries of the day as replaced (kept as history).
-		$entry = new TimeEntry($this->db);
-		$current = $entry->fetchForUserDay((int) $this->fk_user, $day);
-		$ids = array();
-		if (is_array($current)) {
-			foreach ($current as $c) {
-				$ids[] = (int) $c['id'];
-			}
-		}
+		// Mark the replaced entries as replaced (kept as history).
 		if (!empty($ids)) {
 			$sql = "UPDATE ".$this->db->prefix()."anxhr_time_entry SET status = ".TimeEntry::STATUS_REPLACED.", fk_user_modif = ".((int) $approver->id);
 			$sql .= " WHERE rowid IN (".$this->db->sanitize(implode(',', $ids)).")";
@@ -400,7 +425,8 @@ class TimeCorrection extends CommonObject
 	public function getDayString()
 	{
 		if (is_numeric($this->day) && (int) $this->day > 0) {
-			return TimeEntry::timestampToDay((int) $this->day);
+			// DATE column: written and read by core in the server zone.
+			return dol_print_date((int) $this->day, '%Y-%m-%d', 'tzserver');
 		}
 		if (is_string($this->day) && preg_match('/^\d{4}-\d{2}-\d{2}/', $this->day)) {
 			return substr($this->day, 0, 10);
@@ -409,7 +435,7 @@ class TimeCorrection extends CommonObject
 	}
 
 	/**
-	 * Convert 'Y-m-d H:i[:s]' (server time zone) into a timestamp.
+	 * Convert 'Y-m-d H:i[:s]' (company time zone ANXHR_TIMEZONE) into a timestamp.
 	 *
 	 * @param	string	$str	Date time
 	 * @return	int|null
@@ -422,8 +448,7 @@ class TimeCorrection extends CommonObject
 		if ((int) $m[4] > 23 || (int) $m[5] > 59) {
 			return null;
 		}
-		$ts = dol_mktime((int) $m[4], (int) $m[5], isset($m[6]) ? (int) $m[6] : 0, (int) $m[2], (int) $m[3], (int) $m[1], 'tzserver');
-		return ($ts === '' || $ts === false) ? null : (int) $ts;
+		return anxhrTzToTs(trim((string) $str));
 	}
 
 	/**

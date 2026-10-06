@@ -35,10 +35,13 @@ Leave requests and expense reports remain in the Dolibarr core modules (`holiday
 | Constant | Default | Meaning |
 |---|---|---|
 | `ANXHR_DEFAULT_KV` | `SWOE` | Default collective agreement code |
-| `ANXHR_VACATION_IN_HOURS` | `0` | Vacation in hours instead of days |
-| `ANXHR_CLOCK_ALLOW_SELF_CORRECTION_SAME_DAY` | `1` | Self-correction of the current day without approval |
+| `ANXHR_TIMEZONE` | `Europe/Vienna` | Company time zone for working days, night work, Sundays and public holidays |
+| `ANXHR_CLOCK_ALLOW_SELF_CORRECTION_SAME_DAY` | `0` | Own correction of the current day applied without approval |
+| `ANXHR_ALLOW_SELF_APPROVAL` | `0` | Supervisors / HR may approve their own corrections and monthly sheets (disables the four eyes principle) |
 | `ANXHR_PERIOD_AUTOCREATE_DAY` | `1` | Day of month on which monthly periods are created |
 | `ANXHR_RETENTION_YEARS` | `7` | Retention of time records after end of employment |
+
+Planned, not implemented yet: `ANXHR_VACATION_IN_HOURS` (vacation entitlement in hours instead of days). It is therefore not offered in the setup page.
 
 ## Licenses
 

@@ -66,6 +66,7 @@ if (!$res) {
  */
 require_once DOL_DOCUMENT_ROOT.'/core/lib/date.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/user/class/user.class.php';
+require_once __DIR__.'/class/timeentry.class.php';
 dol_include_once('/anxhr/lib/anxhr.lib.php');
 
 // Load translation files required by the page
@@ -226,8 +227,10 @@ if (($cantimeadmin || $cantimeapprove) && anxhrTableExists($db, 'anxhr_time_peri
 
 // Employees with missing clock-out yesterday (last entry of yesterday is not 'out')
 if (($cantimeadmin || $cantimeapprove) && anxhrTableExists($db, 'anxhr_time_entry')) {
-	$ystart = dol_time_plus_duree($today, -1, 'd');
-	$yend = $today - 1;
+	// Yesterday in the company time zone (ANXHR_TIMEZONE), same day definition as the time pages.
+	$todaystr = TimeEntry::timestampToDay($now);
+	$ystart = TimeEntry::dayToTimestamp(TimeEntry::timestampToDay(TimeEntry::dayToTimestamp($todaystr) - 12 * 3600));
+	$yend = TimeEntry::dayToTimestamp($todaystr) - 1;
 	$scope = anxhrCockpitUserScope($user, $cantimeadmin, 'e.fk_user');
 
 	$sql = "SELECT e.fk_user, e.entry_type, e.entry_datetime, u.firstname, u.lastname, u.login, u.statut as ustatus, u.photo, u.email, u.gender";
@@ -358,7 +361,7 @@ if (!empty($missingclockout)) {
 		anxhrCockpitFillUser($userstatic, $obj);
 		print '<tr class="oddeven">';
 		print '<td class="tdoverflowmax200">'.$userstatic->getNomUrl(-1).'</td>';
-		print '<td class="right nowraponall"><a href="'.dol_buildpath('/anxhr/time_day.php', 1).'?id='.((int) $obj->fk_user).'&mainmenu=anxhr" title="'.dolPrintHTMLForAttribute($langs->trans('AnxhrMonthView')).'">'.dol_print_date($db->jdate($obj->entry_datetime), 'dayhour', 'tzuserrel').'</a></td>';
+		print '<td class="right nowraponall"><a href="'.dol_buildpath('/anxhr/time_day.php', 1).'?id='.((int) $obj->fk_user).'&mainmenu=anxhr" title="'.dolPrintHTMLForAttribute($langs->trans('AnxhrMonthView')).'">'.anxhrPrintDateTz($db->jdate($obj->entry_datetime), 'dayhour').'</a></td>';
 		print '</tr>';
 	}
 	print '</table>';

@@ -165,8 +165,8 @@ if (empty($reshook)) {
 		$action = '';
 	}
 
-	// Regenerate automatic deadlines
-	if ($action == 'regeneratedeadlines' && $permissiontoadd && $object->status == HrContract::STATUS_ACTIVE) {
+	// Regenerate automatic deadlines (state change only after the confirmation dialog, with token)
+	if ($action == 'confirm_regeneratedeadlines' && $confirm == 'yes' && $permissiontoadd && $object->status == HrContract::STATUS_ACTIVE) {
 		$result = anxhrGenerateDeadlinesForContract($object, $user);
 		if ($result >= 0) {
 			setEventMessages($langs->trans('AnxhrDeadlinesGenerated', $result), null, 'mesgs');
@@ -309,6 +309,9 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 	$formconfirm = '';
 	if ($action == 'delete') {
 		$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"].'?id='.$object->id, $langs->trans('AnxhrDeleteContract'), $langs->trans('AnxhrConfirmDeleteContract'), 'confirm_delete', '', 0, 1);
+	}
+	if ($action == 'regeneratedeadlines') {
+		$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"].'?id='.$object->id, $langs->trans('AnxhrRegenerateDeadlines'), $langs->trans('AnxhrConfirmRegenerateDeadlines', $object->ref), 'confirm_regeneratedeadlines', '', 0, 1);
 	}
 	if ($action == 'activate') {
 		$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"].'?id='.$object->id, $langs->trans('AnxhrActivateContract'), $langs->trans('AnxhrConfirmActivateContract', $object->ref), 'confirm_activate', '', 0, 1);

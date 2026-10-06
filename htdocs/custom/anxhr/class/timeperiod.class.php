@@ -77,6 +77,7 @@ class TimePeriod extends CommonObject
 		'date_confirm' => array('type' => 'datetime', 'label' => 'AnxhrDateConfirm', 'enabled' => 1, 'position' => 51, 'notnull' => 0, 'visible' => -1),
 		'fk_user_approve' => array('type' => 'integer:User:user/class/user.class.php', 'label' => 'AnxhrApprover', 'enabled' => 1, 'position' => 52, 'notnull' => 0, 'visible' => 1),
 		'date_approve' => array('type' => 'datetime', 'label' => 'AnxhrDateApprove', 'enabled' => 1, 'position' => 53, 'notnull' => 0, 'visible' => 1),
+		'violations_json' => array('type' => 'text', 'label' => 'AnxhrViolations', 'enabled' => 1, 'position' => 55, 'notnull' => 0, 'visible' => 0),
 		'note' => array('type' => 'text', 'label' => 'Note', 'enabled' => 1, 'position' => 60, 'notnull' => 0, 'visible' => 0),
 		'date_creation' => array('type' => 'datetime', 'label' => 'DateCreation', 'enabled' => 1, 'position' => 500, 'notnull' => 1, 'visible' => -2),
 		'tms' => array('type' => 'timestamp', 'label' => 'DateModification', 'enabled' => 1, 'position' => 501, 'notnull' => 0, 'visible' => -2),
@@ -124,6 +125,8 @@ class TimePeriod extends CommonObject
 	public $fk_user_approve;
 	/** @var int|string|null */
 	public $date_approve;
+	/** @var string|null	JSON list of weekly violations (MAX_WEEKLY_60H), see computeWeeklyViolations() */
+	public $violations_json;
 	/** @var string|null */
 	public $note;
 	/** @var int */
@@ -287,10 +290,65 @@ class TimePeriod extends CommonObject
 		$this->sick_days = (float) ($obj ? $obj->sick_days : 0);
 		$this->za_taken_min = (int) ($obj ? $obj->za : 0);
 		$this->balance_start_min = $this->getPreviousBalance();
+		// Overtime is paid out with surcharge (paragraph 10 AZG), so it must not stay in the time balance as well:
+		// - overtime 50: fixed models every minute above target; flexitime only minutes above the normal daily
+		//   maximum (paragraph 4b AZG), which are overtime by law too,
+		// - overtime 100: the premium part of the overtime (night, Sunday, public holiday) of all models.
+		// Flex credit within the normal maximum and part-time Mehrarbeit stay in the balance (TODO paragraph 19d (3b) AZG).
+		// balance_end = balance_start + sum(diff) - overtime_paid.
+		$this->overtime_paid_min = $this->overtime50_min + $this->overtime100_min;
 		$this->balance_end_min = (int) $this->balance_start_min + (int) ($obj ? $obj->diff : 0) - (int) $this->overtime_paid_min;
+		$this->violations_json = $this->computeWeeklyViolations($first, $last);
 
 		$res = $this->updateCommon(is_object($actor) ? $actor : $user, 1);
 		return $res > 0 ? 1 : -1;
+	}
+
+	/**
+	 * Check the weekly limits (paragraph 9 AZG, 60 hours) of every ISO week touching the month,
+	 * using the complete weeks (also days of the neighbour months), one query.
+	 *
+	 * @param	string	$first	First day of the month Y-m-d
+	 * @param	string	$last	Last day of the month Y-m-d
+	 * @return	string|null		JSON list of violations (each with key 'week' = ISO year-week) or null if none
+	 */
+	public function computeWeeklyViolations($first, $last)
+	{
+		$gmFirst = gmmktime(0, 0, 0, (int) substr($first, 5, 2), (int) substr($first, 8, 2), (int) substr($first, 0, 4));
+		$gmLast = gmmktime(0, 0, 0, (int) substr($last, 5, 2), (int) substr($last, 8, 2), (int) substr($last, 0, 4));
+		$monday = $gmFirst - ((int) gmdate('N', $gmFirst) - 1) * 86400;
+		$sunday = $gmLast + (7 - (int) gmdate('N', $gmLast)) * 86400;
+		$tday = new TimeDay($this->db);
+		$days = $tday->fetchDays((int) $this->fk_user, gmdate('Y-m-d', $monday), gmdate('Y-m-d', $sunday));
+		if (!is_array($days)) {
+			return null;
+		}
+		$weeks = array();
+		foreach ($days as $d => $row) {
+			$gm = gmmktime(0, 0, 0, (int) substr($d, 5, 2), (int) substr($d, 8, 2), (int) substr($d, 0, 4));
+			$weeks[gmdate('o-\WW', $gm)][] = $row;
+		}
+		$engine = new TimeEngine();
+		$violations = array();
+		foreach ($weeks as $week => $rows) {
+			$res = $engine->computeWeek($rows);
+			foreach ($res['violations'] as $v) {
+				$v['week'] = $week;
+				$violations[] = $v;
+			}
+		}
+		return empty($violations) ? null : json_encode($violations);
+	}
+
+	/**
+	 * Return the weekly violations stored on the period.
+	 *
+	 * @return array<int,array<string,mixed>>
+	 */
+	public function getWeeklyViolations()
+	{
+		$decoded = empty($this->violations_json) ? array() : json_decode((string) $this->violations_json, true);
+		return is_array($decoded) ? $decoded : array();
 	}
 
 	/**
@@ -384,7 +442,7 @@ class TimePeriod extends CommonObject
 		}
 		$this->db->begin();
 		$this->status = self::STATUS_REOPENED;
-		$this->note = trim((string) $this->note."\n".dol_print_date(dol_now(), 'dayhour', 'tzserver').' '.$actor->login.': '.$reason);
+		$this->note = trim((string) $this->note."\n".anxhrPrintDateTz(dol_now(), 'dayhour').' '.$actor->login.': '.$reason);
 		$this->context['reopen_reason'] = $reason;
 		$res = $this->updateCommon($actor, 1);
 		if ($res > 0 && $this->lockDays(0) < 0) {
@@ -414,6 +472,44 @@ class TimePeriod extends CommonObject
 		}
 		$this->status = self::STATUS_EXPORTED;
 		return $this->updateWithTrigger($actor, 'ANXHR_TIMEPERIOD_EXPORT');
+	}
+
+	/**
+	 * Mark several approved periods as exported with one UPDATE and fire one trigger
+	 * ANXHR_TIMEPERIOD_EXPORT for the batch (context 'exported_ids').
+	 *
+	 * @param	DoliDB	$db		Database handler
+	 * @param	User	$actor	User with export right
+	 * @param	int[]	$ids	Period ids
+	 * @return	int				Number of periods marked, <0 if KO
+	 */
+	public static function setExportedBatch($db, User $actor, array $ids)
+	{
+		$ids = array_values(array_unique(array_filter(array_map('intval', $ids))));
+		if (empty($ids)) {
+			return 0;
+		}
+		$db->begin();
+		$sql = "UPDATE ".$db->prefix()."anxhr_time_period SET status = ".self::STATUS_EXPORTED.", fk_user_modif = ".((int) $actor->id);
+		$sql .= " WHERE rowid IN (".$db->sanitize(implode(',', $ids)).") AND status = ".self::STATUS_APPROVED;
+		$sql .= " AND entity IN (".getEntity('anxhr_time_period').")";
+		$resql = $db->query($sql);
+		if (!$resql) {
+			dol_syslog(__METHOD__.' '.$db->lasterror(), LOG_ERR);
+			$db->rollback();
+			return -1;
+		}
+		$nb = $db->affected_rows($resql);
+		$batch = new self($db);
+		$batch->id = $ids[0];
+		$batch->status = self::STATUS_EXPORTED;
+		$batch->context['exported_ids'] = $ids;
+		if ($batch->call_trigger('ANXHR_TIMEPERIOD_EXPORT', $actor) < 0) {
+			$db->rollback();
+			return -1;
+		}
+		$db->commit();
+		return (int) $nb;
 	}
 
 	/**
@@ -576,8 +672,8 @@ class TimePeriod extends CommonObject
 class AnxhrTimeIntegration
 {
 	/**
-	 * Leave request approved: recompute the affected days (ZA consumes the time balance,
-	 * vacation / sick fulfil the target).
+	 * Leave request approved: recompute the affected days, for every leave type (ZA consumes the time
+	 * balance, vacation / sick fulfil the target, other types keep the target, see TimeDay::mapLeaveType()).
 	 *
 	 * @param	DoliDB			$db			Database handler
 	 * @param	CommonObject	$holiday	Holiday object (fk_user, date_debut, date_fin)
@@ -590,7 +686,7 @@ class AnxhrTimeIntegration
 	}
 
 	/**
-	 * Leave request canceled / refused after approval: recompute the affected days.
+	 * Leave request canceled, modified or deleted: recompute the affected days (old and new range).
 	 *
 	 * @param	DoliDB			$db			Database handler
 	 * @param	CommonObject	$holiday	Holiday object
@@ -615,8 +711,20 @@ class AnxhrTimeIntegration
 		if (!is_object($holiday) || empty($holiday->fk_user) || empty($holiday->date_debut) || empty($holiday->date_fin)) {
 			return 0;
 		}
-		$from = TimeEntry::timestampToDay((int) $holiday->date_debut);
-		$to = TimeEntry::timestampToDay((int) $holiday->date_fin);
+		// date_debut / date_fin are DATE columns read by core in the server zone.
+		$from = dol_print_date((int) $holiday->date_debut, '%Y-%m-%d', 'tzserver');
+		$to = dol_print_date((int) $holiday->date_fin, '%Y-%m-%d', 'tzserver');
+		// On modification the old range must be recomputed too (days that are no longer part of the leave).
+		if (!empty($holiday->oldcopy) && is_object($holiday->oldcopy) && !empty($holiday->oldcopy->date_debut) && !empty($holiday->oldcopy->date_fin)) {
+			$from = min($from, dol_print_date((int) $holiday->oldcopy->date_debut, '%Y-%m-%d', 'tzserver'));
+			$to = max($to, dol_print_date((int) $holiday->oldcopy->date_fin, '%Y-%m-%d', 'tzserver'));
+		}
+		// Future days are computed when they happen (cron), no need to compute them now.
+		$today = TimeEntry::timestampToDay(dol_now());
+		if ($from > $today) {
+			return 0;
+		}
+		$to = min($to, $today);
 		$res = TimeDay::recomputeRange($db, $user, (int) $holiday->fk_user, $from, $to);
 		if ($res < 0) {
 			// Never block the core leave workflow because of a time recomputation problem: log only.

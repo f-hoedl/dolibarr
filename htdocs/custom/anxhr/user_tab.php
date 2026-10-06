@@ -90,6 +90,10 @@ if (!anxhrCanSeeUser($user, (int) $object->id)) {
 
 $isself = ((int) $user->id == (int) $object->id);
 $canwriteemployee = $user->hasRight('anxhr', 'employee', 'write');
+// Emergency contacts are private data: visible only to the employee himself or to HR (employee read_all),
+// never to supervisors; adding / deleting needs employee write in addition.
+$canseeemergency = ($isself || $user->hasRight('anxhr', 'employee', 'read_all'));
+$canwriteemergency = ($canseeemergency && $canwriteemployee);
 $canreadcontract = ($user->hasRight('anxhr', 'contract', 'read') || $isself);
 $canwritecontract = $user->hasRight('anxhr', 'contract', 'write');
 $canreaddeadline = ($user->hasRight('anxhr', 'deadline', 'read') || $isself);
@@ -100,7 +104,7 @@ $canreadtime = (($isself && $user->hasRight('anxhr', 'time', 'own')) || $user->h
 
 $hookmanager->initHooks(array('anxhrusertab', 'globalcard'));
 
-$tableemergency = anxhrTableExists($db, 'anxhr_emergency_contact');
+$tableemergency = ($canseeemergency && anxhrTableExists($db, 'anxhr_emergency_contact'));
 $selfurl = $_SERVER["PHP_SELF"].'?id='.((int) $object->id);
 
 
@@ -114,7 +118,7 @@ if ($reshook < 0) {
 	setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
 }
 
-if (empty($reshook) && $canwriteemployee && $tableemergency) {
+if (empty($reshook) && $canwriteemergency && $tableemergency) {
 	if ($action == 'add_emergency') {
 		$ecname = trim(GETPOST('ec_name', 'alphanohtml'));
 		$ecrelation = trim(GETPOST('ec_relation', 'alphanohtml'));
@@ -357,7 +361,7 @@ dol_banner_tab($object, 'id', $linkback, $user->hasRight("user", "user", "read")
 print '<div class="underbanner clearboth"></div>';
 
 // Confirm deletion of emergency contact
-if ($action == 'delete_emergency' && $canwriteemployee && $ecid > 0) {
+if ($action == 'delete_emergency' && $canwriteemergency && $ecid > 0) {
 	print $form->formconfirm($selfurl.'&ecid='.((int) $ecid), $langs->trans('AnxhrDeleteEmergencyContact'), $langs->trans('AnxhrConfirmDeleteEmergencyContact'), 'confirm_delete_emergency', '', '', 1);
 }
 
@@ -452,7 +456,7 @@ if ($tableemergency) {
 		print '<td class="nowraponall">'.dol_print_phone((string) $obj->phone, '', 0, 0, 'AC_TEL').'</td>';
 		print '<td class="tdoverflowmax150 hideonsmartphone">'.dol_print_email((string) $obj->email, 0, 0, 1).'</td>';
 		print '<td class="right">';
-		if ($canwriteemployee) {
+		if ($canwriteemergency) {
 			print '<a class="reposition" href="'.$selfurl.'&action=delete_emergency&ecid='.((int) $obj->rowid).'&token='.newToken().'" aria-label="'.dolPrintHTMLForAttribute($langs->trans('AnxhrDeleteEmergencyContact')).'">'.img_delete($langs->trans('AnxhrDeleteEmergencyContact')).'</a>';
 		}
 		print '</td>';
@@ -461,7 +465,7 @@ if ($tableemergency) {
 	print '</table>';
 	print '</div>';
 
-	if ($canwriteemployee) {
+	if ($canwriteemergency) {
 		print '<form method="POST" action="'.$_SERVER["PHP_SELF"].'" class="anxhr-inline-form">';
 		print '<input type="hidden" name="token" value="'.newToken().'">';
 		print '<input type="hidden" name="action" value="add_emergency">';

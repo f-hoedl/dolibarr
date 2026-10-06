@@ -473,7 +473,8 @@ class HrContract extends CommonObject
 		$sql .= " AND t.entity IN (".getEntity($this->element).")";
 		$sql .= " AND t.status = ".self::STATUS_ACTIVE;
 		$sql .= " AND t.rowid <> ".((int) $this->id);
-		$sql .= " AND t.date_start > '".$this->db->idate($this->date_start)."'";
+		// DATE column: compare with the date only (an idate() with time part would make a same day version "later").
+		$sql .= " AND t.date_start > '".$this->db->escape(dol_print_date($this->date_start, '%Y-%m-%d', 'tzserver'))."'";
 		$resql = $this->db->query($sql);
 		if (!$resql) {
 			return false;
@@ -515,7 +516,8 @@ class HrContract extends CommonObject
 		$sql .= " AND t.entity IN (".getEntity($this->element).")";
 		$sql .= " AND t.status = ".self::STATUS_ACTIVE;
 		$sql .= " AND t.rowid <> ".((int) $this->id);
-		$sql .= " AND t.date_start < '".$this->db->idate($this->date_start)."'";
+		// DATE column: compare with the date only, so a version starting the same day never ends the old contract before its start.
+		$sql .= " AND t.date_start < '".$this->db->escape(dol_print_date($this->date_start, '%Y-%m-%d', 'tzserver'))."'";
 		$resql = $this->db->query($sql);
 		if (!$resql) {
 			$this->error = $this->db->lasterror();

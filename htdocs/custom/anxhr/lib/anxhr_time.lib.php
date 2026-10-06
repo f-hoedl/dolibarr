@@ -26,6 +26,111 @@ if (file_exists(__DIR__.'/anxhr.lib.php')) {
 }
 
 /**
+ * Return the company time zone used for all working time calculations (constant ANXHR_TIMEZONE).
+ * Working days, night work, Sundays and the wall clock times passed to the TimeEngine are always
+ * evaluated in this zone, independent of the PHP server zone and of the zone of the viewing user.
+ * Entries are stored as absolute timestamps (via $db->idate()).
+ *
+ * @return	DateTimeZone
+ */
+function anxhrTimeZone()
+{
+	static $cache = array();
+	$name = getDolGlobalString('ANXHR_TIMEZONE', 'Europe/Vienna');
+	if (!isset($cache[$name])) {
+		try {
+			$cache[$name] = new DateTimeZone($name);
+		} catch (Exception $e) {
+			dol_syslog('anxhrTimeZone invalid time zone '.$name.', fallback to Europe/Vienna', LOG_WARNING);
+			$cache[$name] = new DateTimeZone('Europe/Vienna');
+		}
+	}
+	return $cache[$name];
+}
+
+/**
+ * Convert a wall clock string of the company time zone into a timestamp.
+ *
+ * @param	string	$str	'Y-m-d H:i:s', 'Y-m-d H:i' or 'Y-m-d' (midnight)
+ * @return	int|null		Timestamp or null if invalid
+ */
+function anxhrTzToTs($str)
+{
+	if (!preg_match('/^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2}))?)?$/', trim((string) $str), $m)) {
+		return null;
+	}
+	if (!checkdate((int) $m[2], (int) $m[3], (int) $m[1])) {
+		return null;
+	}
+	$dt = new DateTime('now', anxhrTimeZone());
+	$dt->setDate((int) $m[1], (int) $m[2], (int) $m[3]);
+	$dt->setTime(isset($m[4]) && $m[4] !== '' ? (int) $m[4] : 0, isset($m[5]) && $m[5] !== '' ? (int) $m[5] : 0, isset($m[6]) && $m[6] !== '' ? (int) $m[6] : 0);
+	return $dt->getTimestamp();
+}
+
+/**
+ * Format a timestamp as wall clock of the company time zone (PHP date() format).
+ *
+ * @param	int		$ts		Timestamp
+ * @param	string	$format	PHP date format
+ * @return	string
+ */
+function anxhrTsToTz($ts, $format = 'Y-m-d H:i:s')
+{
+	$dt = new DateTime('@'.((int) $ts));
+	$dt->setTimezone(anxhrTimeZone());
+	return $dt->format($format);
+}
+
+/**
+ * Print a timestamp with a Dolibarr format (localized names, 'day', 'hour', 'dayhour', '%H:%M', ...)
+ * in the company time zone.
+ *
+ * @param	int|string	$ts		Timestamp
+ * @param	string		$format	dol_print_date() format
+ * @return	string
+ */
+function anxhrPrintDateTz($ts, $format)
+{
+	if ($ts === '' || $ts === null) {
+		return '';
+	}
+	$dt = new DateTime('@'.((int) $ts));
+	$dt->setTimezone(anxhrTimeZone());
+	return dol_print_date((int) $ts + $dt->getOffset(), $format, 'gmt');
+}
+
+/**
+ * Return the GMT midnight timestamp of a day 'Y-m-d' (for selectDate() / GETPOSTDATE() with 'gmt',
+ * so a pure date is never shifted by a time zone).
+ *
+ * @param	string	$day	Day Y-m-d
+ * @return	int|null
+ */
+function anxhrDayToGmt($day)
+{
+	if (!preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', (string) $day, $m) || !checkdate((int) $m[2], (int) $m[3], (int) $m[1])) {
+		return null;
+	}
+	return gmmktime(0, 0, 0, (int) $m[2], (int) $m[3], (int) $m[1]);
+}
+
+/**
+ * Return the server zone midnight timestamp of a day 'Y-m-d', for DATE columns written with
+ * $db->idate() / createCommon() (core writes and reads DATE columns in the server zone).
+ *
+ * @param	string	$day	Day Y-m-d
+ * @return	int|null
+ */
+function anxhrDayToServerTs($day)
+{
+	if (!preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', (string) $day, $m) || !checkdate((int) $m[2], (int) $m[3], (int) $m[1])) {
+		return null;
+	}
+	return (int) dol_mktime(0, 0, 0, (int) $m[2], (int) $m[3], (int) $m[1], 'tzserver');
+}
+
+/**
  * Format minutes as HH:MM, optionally always signed ("+07:24").
  * Note: anxhr.lib.php (SCAFFOLD) provides anxhrFormatMinutes($minutes) without sign option.
  *
@@ -274,7 +379,7 @@ function anxhrTimeAbsenceLabel($code, $langs)
 	if (empty($code)) {
 		return '';
 	}
-	$map = array('vacation' => 'AnxhrAbsenceVacation', 'sick' => 'AnxhrAbsenceSick', 'za' => 'AnxhrAbsenceZa', 'holiday' => 'AnxhrAbsenceHoliday', 'special' => 'AnxhrAbsenceSpecial');
+	$map = array('vacation' => 'AnxhrAbsenceVacation', 'sick' => 'AnxhrAbsenceSick', 'za' => 'AnxhrAbsenceZa', 'holiday' => 'AnxhrAbsenceHoliday', 'special' => 'AnxhrAbsenceSpecial', 'other' => 'AnxhrAbsenceOther');
 	return isset($map[$code]) ? $langs->trans($map[$code]) : dol_escape_htmltag($code);
 }
 

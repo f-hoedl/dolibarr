@@ -98,15 +98,21 @@ class TravelDiet
 	}
 
 	/**
-	 * Compute per diem for a business trip, split per calendar day.
+	 * Compute per diem for a business trip.
 	 *
-	 * Rule (paragraph 26 Z 4 lit b EStG): trip longer than 3 hours -> one twelfth of the daily rate per
-	 * started hour, full rate for 12 twelfths. We apply it per calendar day (KV / LStR Rz 721 calendar
-	 * day method). Night allowance (paragraph 26 Z 4 lit c EStG) per night without receipt.
+	 * Rule (paragraph 26 Z 4 lit b EStG): if the whole trip lasts longer than 3 hours, one twelfth of the
+	 * daily rate is paid per started hour, the full rate for 12 twelfths. The 3 hour threshold applies to
+	 * the trip as a whole, not per day.
+	 * Default method '24h' (paragraph 26 Z 4 lit b EStG): the trip is split into periods of 24 hours from
+	 * the start of the trip, each period gives at most 12 twelfths.
+	 * Method 'calendar' (option, KV / LStR Rz 721 calendar day method): split per calendar day.
+	 * Meals (meals_provided) are keyed by the date on which the period starts.
+	 * Night allowance (paragraph 26 Z 4 lit c EStG) per night without receipt; default number of nights
+	 * is the number of calendar days crossed by the trip (pass 'nights' to override).
 	 * Abroad (paragraph 26 Z 4 lit d EStG, Reisegebuehrenvorschrift): rates taggeld_<ISO2> /
 	 * naechtigung_<ISO2>; missing rate falls back to the inland rate and sets flag rate_missing.
 	 *
-	 * @param	array<string,mixed>	$trip	start, end ('Y-m-d H:i'), country (ISO2), nights (int|null), meals_provided (date => array(lunch, dinner))
+	 * @param	array<string,mixed>	$trip	start, end ('Y-m-d H:i'), country (ISO2), nights (int|null), meals_provided (date => array(lunch, dinner)), method ('24h'|'calendar')
 	 * @return	array<string,mixed>			array('days' => list, 'totals' => array, 'rate_missing' => bool, 'nights' => int, 'error' => string|null)
 	 */
 	public function computeTrip(array $trip)
@@ -122,25 +128,34 @@ class TravelDiet
 		$codeDay = ($country === 'AT') ? 'taggeld_in' : 'taggeld_'.strtolower($country);
 		$codeNight = ($country === 'AT') ? 'naechtigung_in' : 'naechtigung_'.strtolower($country);
 		$meals = (isset($trip['meals_provided']) && is_array($trip['meals_provided'])) ? $trip['meals_provided'] : array();
+		$method = (isset($trip['method']) && $trip['method'] === 'calendar') ? 'calendar' : '24h';
+		// The more than 3 hours condition is checked once for the whole trip.
+		$tripEligible = (($end - $start) > 3 * 3600);
 
-		// Split into calendar days.
+		// Split into periods (24 hours from trip start, or calendar days).
 		$segments = array();
 		$cursor = $start;
 		while ($cursor < $end) {
-			$dayStart = gmmktime(0, 0, 0, (int) gmdate('m', $cursor), (int) gmdate('d', $cursor), (int) gmdate('Y', $cursor));
-			$next = $dayStart + 86400;
+			if ($method === 'calendar') {
+				$next = gmmktime(0, 0, 0, (int) gmdate('m', $cursor), (int) gmdate('d', $cursor), (int) gmdate('Y', $cursor)) + 86400;
+			} else {
+				$next = $cursor + 86400;
+			}
 			$segEnd = min($next, $end);
 			$segments[] = array('date' => gmdate('Y-m-d', $cursor), 'seconds' => $segEnd - $cursor);
 			$cursor = $segEnd;
 		}
+		$startDay = gmmktime(0, 0, 0, (int) gmdate('m', $start), (int) gmdate('d', $start), (int) gmdate('Y', $start));
+		$endDay = gmmktime(0, 0, 0, (int) gmdate('m', $end - 1), (int) gmdate('d', $end - 1), (int) gmdate('Y', $end - 1));
+		$daysCrossed = (int) round(($endDay - $startDay) / 86400);
 
-		$nights = (isset($trip['nights']) && $trip['nights'] !== null && $trip['nights'] !== '') ? max(0, (int) $trip['nights']) : max(0, count($segments) - 1);
+		$nights = (isset($trip['nights']) && $trip['nights'] !== null && $trip['nights'] !== '') ? max(0, (int) $trip['nights']) : max(0, $daysCrossed);
 		$res['nights'] = $nights;
 
 		$nightsLeft = $nights;
 		foreach ($segments as $idx => $seg) {
 			$hours = $seg['seconds'] / 3600;
-			$twelfths = ($hours > 3) ? (int) min(12, ceil($hours - 1e-9)) : 0;
+			$twelfths = $tripEligible ? (int) min(12, ceil($hours - 1e-9)) : 0;
 			$rate = $this->rateWithFallback($codeDay, 'taggeld_in', $seg['date'], $res['rate_missing']);
 			$daily = $rate !== null ? $rate['amount'] : 0.0;
 			$taggeld = round($daily * $twelfths / 12, 2);
@@ -152,7 +167,7 @@ class TravelDiet
 			}
 			$deduction = round(min($taggeld, $daily * $this->mealDeductionPct / 100 * $mealCount), 2);
 
-			// Nights are attributed to the calendar days of the trip in order (all but the last day by default).
+			// Nights are attributed to the periods of the trip in order (remaining nights go to the last period).
 			$nachtAmount = 0.0;
 			$nightsHere = 0;
 			$isLast = ($idx === count($segments) - 1);
@@ -192,8 +207,9 @@ class TravelDiet
 
 	/**
 	 * Compute mileage allowance (Kilometergeld, paragraph 26 Z 4 lit a EStG, Reisegebuehrenvorschrift
-	 * paragraph 10, BBG 2025). Annual tax free caps per vehicle (car 30000 km, bike 3000 km) apply via
-	 * cap_per_year of the rate. Passenger supplement per passenger and km (car only).
+	 * paragraph 10, BBG 2025). Annual tax free caps apply via cap_per_year of the rate: 30000 km per year
+	 * for car AND motorbike COMBINED (callers must pass the combined car + motorbike kilometres of the year
+	 * in km_year_so_far for both vehicles), 3000 km for the bike. Passenger supplement per passenger and km (car only).
 	 *
 	 * @param	array<string,mixed>	$in		date, vehicle (car|motorbike|bike), km, passengers, km_year_so_far
 	 * @return	array<string,mixed>			rate, km, km_capped, amount, amount_capped, taxable_excess, passenger_amount, rate_missing
@@ -236,6 +252,7 @@ class TravelDiet
 	 */
 	public static function defaultAustrianRates()
 	{
+		// km_car and km_motorbike share ONE annual cap of 30000 km (combined), see computeKm().
 		return array(
 			'taggeld_in' => array(
 				array('valid_from' => '1900-01-01', 'amount' => 26.40, 'cap_per_year' => null, 'label' => 'Taggeld Inland'),
@@ -250,9 +267,9 @@ class TravelDiet
 				array('valid_from' => '2025-01-01', 'amount' => 0.50, 'cap_per_year' => 30000.0, 'label' => 'Kilometergeld PKW'),
 			),
 			'km_motorbike' => array(
-				array('valid_from' => '1900-01-01', 'amount' => 0.24, 'cap_per_year' => null, 'label' => 'Kilometergeld Motorrad'),
-				array('valid_from' => '2025-01-01', 'amount' => 0.50, 'cap_per_year' => null, 'label' => 'Kilometergeld Motorrad'),
-				array('valid_from' => '2025-07-01', 'amount' => 0.25, 'cap_per_year' => null, 'label' => 'Kilometergeld Motorrad'),
+				array('valid_from' => '1900-01-01', 'amount' => 0.24, 'cap_per_year' => 30000.0, 'label' => 'Kilometergeld Motorrad'),
+				array('valid_from' => '2025-01-01', 'amount' => 0.50, 'cap_per_year' => 30000.0, 'label' => 'Kilometergeld Motorrad'),
+				array('valid_from' => '2025-07-01', 'amount' => 0.25, 'cap_per_year' => 30000.0, 'label' => 'Kilometergeld Motorrad'),
 			),
 			'km_bike' => array(
 				array('valid_from' => '1900-01-01', 'amount' => 0.38, 'cap_per_year' => 2500.0, 'label' => 'Kilometergeld Fahrrad'),

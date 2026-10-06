@@ -84,7 +84,7 @@ if (!isModEnabled('anxhr') || empty($user->id) || !$user->hasRight('anxhr', 'tim
 $langs->load('anxhr@anxhr');
 
 if (!anxhrTableExists($db, 'anxhr_time_entry')) {
-	print json_encode(array('state' => 'unknown', 'label' => ''));
+	print json_encode(array('state' => 'unknown', 'label' => $langs->transnoentitiesnoconv('AnxhrClockStateUnknown')));
 	$db->close();
 	exit;
 }

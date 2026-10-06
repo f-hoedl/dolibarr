@@ -217,31 +217,10 @@ class ActionsAnxhr extends CommonHookActions
 	 */
 	public static function getClockState($db, $userid)
 	{
-		$sql = "SELECT entry_type FROM ".$db->prefix()."anxhr_time_entry";
-		$sql .= " WHERE fk_user = ".((int) $userid);
-		$sql .= " AND entity IN (".getEntity('anxhr_time_entry').")";
-		$sql .= " AND status = 1";
-		$sql .= " AND entry_datetime >= '".$db->idate(dol_now() - 86400)."'";
-		$sql .= " ORDER BY entry_datetime DESC, rowid DESC";
-		$sql .= $db->plimit(1);
+		// Same rule as the clock page (one source of truth, same open state window).
+		dol_include_once('/anxhr/class/timeentry.class.php');
 
-		$resql = $db->query($sql);
-		if (!$resql) {
-			return 'out';
-		}
-		$obj = $db->fetch_object($resql);
-		$db->free($resql);
-		if (!$obj) {
-			return 'out';
-		}
-		if ($obj->entry_type == 'break_start') {
-			return 'break';
-		}
-		if ($obj->entry_type == 'in' || $obj->entry_type == 'break_end') {
-			return 'in';
-		}
-
-		return 'out';
+		return TimeEntry::getLastStateForUser($db, (int) $userid);
 	}
 
 	/**

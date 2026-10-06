@@ -61,8 +61,10 @@ class CronjobsAnxhr
 	}
 
 	/**
-	 * Send reminders for open HR deadlines. A reminder is sent when the number of days until the due date
-	 * is one of the values of remind_days (csv) and no reminder was already sent today.
+	 * Send reminders for open HR deadlines. remind_days (csv, e.g. "30,14,7") defines reminder stages:
+	 * a reminder is sent when the days left are <= a stage d and no reminder was sent since the stage
+	 * started (last_remind_date empty or < date_due - d days). So a missed cron run is caught up the next
+	 * day. Overdue open deadlines are reminded once per week.
 	 * For each reminder an agenda event is created for the responsible user and the business event
 	 * ANXHR_DEADLINE_REMIND is triggered (the Notification module then sends emails).
 	 *
@@ -84,13 +86,12 @@ class CronjobsAnxhr
 		$todaystr = dol_print_date($today, 'dayrfc', 'gmt');
 		$maxdate = dol_time_plus_duree($today, 1, 'y');
 
-		$sql = "SELECT d.rowid, d.fk_user, d.label, d.type, d.date_due, d.remind_days, d.fk_user_responsible,";
+		$sql = "SELECT d.rowid, d.fk_user, d.label, d.type, d.date_due, d.remind_days, d.last_remind_date, d.fk_user_responsible,";
 		$sql .= " u.fk_user as fk_supervisor, u.firstname, u.lastname";
 		$sql .= " FROM ".$this->db->prefix()."anxhr_deadline as d";
 		$sql .= " LEFT JOIN ".$this->db->prefix()."user as u ON u.rowid = d.fk_user";
 		$sql .= " WHERE d.status = 0";
 		$sql .= " AND d.entity IN (".getEntity('anxhr_deadline').")";
-		$sql .= " AND d.date_due >= '".$this->db->idate($today, 'gmt')."'";
 		$sql .= " AND d.date_due <= '".$this->db->idate($maxdate, 'gmt')."'";
 		$sql .= " AND (d.last_remind_date IS NULL OR d.last_remind_date < '".$this->db->escape($todaystr)."')";
 		$sql .= " ORDER BY d.date_due ASC";
@@ -109,7 +110,22 @@ class CronjobsAnxhr
 			$datedue = $this->db->jdate($obj->date_due, 'gmt');
 			$daysleft = (int) round(($datedue - $today) / 86400);
 			$reminddays = array_map('intval', array_filter(array_map('trim', explode(',', (string) $obj->remind_days)), 'strlen'));
-			if (in_array($daysleft, $reminddays, true)) {
+			$lastremind = empty($obj->last_remind_date) ? null : $this->db->jdate($obj->last_remind_date, 'gmt');
+			$send = false;
+			if ($daysleft < 0) {
+				// Overdue: once per week.
+				$send = (empty($lastremind) || $lastremind <= $today - 7 * 86400);
+			} else {
+				// Current stage = smallest threshold that is >= days left.
+				$stage = null;
+				foreach ($reminddays as $d) {
+					if ($d >= 0 && $daysleft <= $d && ($stage === null || $d < $stage)) {
+						$stage = $d;
+					}
+				}
+				$send = ($stage !== null && (empty($lastremind) || $lastremind < $datedue - $stage * 86400));
+			}
+			if ($send) {
 				$obj->datedue_ts = $datedue;
 				$obj->daysleft = $daysleft;
 				$todo[] = $obj;
@@ -177,7 +193,9 @@ class CronjobsAnxhr
 			return 0;
 		}
 
-		$yesterday = dol_print_date(dol_time_plus_duree(dol_get_first_hour(dol_now()), -1, 'd'), '%Y-%m-%d');
+		// Yesterday in the company time zone (ANXHR_TIMEZONE), TimeEntry is loaded with TimeDay.
+		$todayday = TimeEntry::timestampToDay(dol_now());
+		$yesterday = TimeEntry::timestampToDay(TimeEntry::dayToTimestamp($todayday) - 12 * 3600);
 
 		$result = call_user_func(array($classname, 'recomputeAllUsersForDay'), $this->db, $user, $yesterday);
 		if (is_numeric($result) && $result < 0) {
@@ -301,7 +319,11 @@ class CronjobsAnxhr
 		$event->type_code = 'AC_OTH_AUTO';
 		$event->code = 'AC_ANXHR_DEADLINE_REMIND';
 		$event->label = dol_trunc($label, 120, 'right', 'UTF-8', 1);
-		$event->note_private = $langs->transnoentitiesnoconv('AnxhrDeadlineReminderNote', dol_print_date($obj->datedue_ts, 'day'), $obj->daysleft);
+		if ($obj->daysleft < 0) {
+			$event->note_private = $langs->transnoentitiesnoconv('AnxhrDeadlineOverdueNote', dol_print_date($obj->datedue_ts, 'day'), abs((int) $obj->daysleft));
+		} else {
+			$event->note_private = $langs->transnoentitiesnoconv('AnxhrDeadlineReminderNote', dol_print_date($obj->datedue_ts, 'day'), $obj->daysleft);
+		}
 		$event->datep = $obj->datedue_ts;
 		$event->datef = $obj->datedue_ts;
 		$event->fulldayevent = 1;
@@ -386,9 +408,13 @@ class CronjobsAnxhr
 	 */
 	private function getFallbackAdminId()
 	{
+		global $conf;
+
 		$sql = "SELECT rowid FROM ".$this->db->prefix()."user";
 		$sql .= " WHERE admin = 1 AND statut = 1";
-		$sql .= " ORDER BY entity ASC, rowid ASC";
+		// Admin of the current entity first, else a superadmin (entity 0)
+		$sql .= " AND entity IN (0, ".((int) $conf->entity).")";
+		$sql .= " ORDER BY entity DESC, rowid ASC";
 		$sql .= $this->db->plimit(1);
 		$resql = $this->db->query($sql);
 		if ($resql) {

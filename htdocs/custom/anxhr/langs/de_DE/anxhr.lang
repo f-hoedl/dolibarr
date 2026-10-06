@@ -83,10 +83,12 @@ AnxhrSetupSectionTime = Zeiterfassung
 AnxhrSetupSectionPrivacy = Datenschutz
 ANXHR_DEFAULT_KV = Standard-Kollektivvertrag (Code)
 ANXHR_DEFAULT_KVTooltip = Code des Kollektivvertrags, der verwendet wird, wenn im Dienstvertrag keiner hinterlegt ist, zum Beispiel SWOE.
-ANXHR_VACATION_IN_HOURS = Urlaub in Stunden verwalten
-ANXHR_VACATION_IN_HOURSTooltip = Wenn aktiviert, wird der Urlaubsanspruch in Stunden statt in Arbeitstagen geführt (sinnvoll bei unregelmäßiger Teilzeit).
 ANXHR_CLOCK_ALLOW_SELF_CORRECTION_SAME_DAY = Selbstkorrektur am selben Tag erlauben
 ANXHR_CLOCK_ALLOW_SELF_CORRECTION_SAME_DAYTooltip = Mitarbeiter können ihre Buchungen des laufenden Tages ohne Genehmigung korrigieren. Ältere Buchungen erfordern immer einen genehmigten Korrekturantrag.
+ANXHR_TIMEZONE = Zeitzone des Unternehmens
+ANXHR_TIMEZONETooltip = Zeitzone, in der Arbeitstage, Nachtarbeit, Sonn- und Feiertage ausgewertet werden (unabhängig von Server- und Benutzerzeitzone). Standard Europe/Vienna.
+ANXHR_ALLOW_SELF_APPROVAL = Eigene Genehmigung erlauben
+ANXHR_ALLOW_SELF_APPROVALTooltip = Wenn aktiviert, dürfen Vorgesetzte oder HR ihre eigenen Korrekturen und Monatsblätter genehmigen. Für das Vier-Augen-Prinzip deaktiviert lassen (nur für sehr kleine Unternehmen).
 ANXHR_PERIOD_AUTOCREATE_DAY = Tag im Monat für die Anlage der Monatsabschlüsse
 ANXHR_PERIOD_AUTOCREATE_DAYTooltip = An diesem Tag des Monats legt der geplante Job die Monatsabschlüsse des Vormonats an.
 ANXHR_RETENTION_YEARS = Aufbewahrungsfrist (Jahre)
@@ -116,6 +118,7 @@ AnxhrCronNoReminder = Heute sind keine Erinnerungen zu versenden
 AnxhrCronRemindersSent = %s Erinnerung(en) versendet
 AnxhrDeadlineReminderLabel = HR-Frist: %s (%s)
 AnxhrDeadlineReminderNote = Fällig am %s, in %s Tag(en).
+AnxhrDeadlineOverdueNote = War fällig am %s, seit %s Tag(en) überfällig.
 
 #
 # Notifications
@@ -131,6 +134,7 @@ AnxhrClockState = Stempelstatus
 AnxhrClockStateIn = Eingestempelt
 AnxhrClockStateBreak = In Pause
 AnxhrClockStateOut = Ausgestempelt
+AnxhrClockStateUnknown = Stempelstatus unbekannt
 
 #
 # Cockpit
@@ -161,6 +165,7 @@ AnxhrNoContract = Kein Dienstvertrag erfasst
 AnxhrOpenEnded = unbefristet
 AnxhrEmploymentPeriod = Beschäftigungszeitraum
 AnxhrWeeklyHours = Wochenstunden
+AnxhrKvCode = Kollektivvertrag
 AnxhrEmploymentType = Beschäftigungsart
 AnxhrEmploymentFulltime = Vollzeit
 AnxhrEmploymentParttime = Teilzeit

@@ -62,6 +62,8 @@ class InterfaceAnxhrTriggers extends DolibarrTriggers
 		switch ($action) {
 			case 'HOLIDAY_APPROVE':
 			case 'HOLIDAY_CANCEL':
+			case 'HOLIDAY_MODIFY':
+			case 'HOLIDAY_DELETE':
 				return $this->handleHolidayEvent($action, $object, $user);
 
 			case 'USER_CREATE':
@@ -78,8 +80,9 @@ class InterfaceAnxhrTriggers extends DolibarrTriggers
 	}
 
 	/**
-	 * Handle approval / cancellation of leave requests. Only time compensation leaves (ZA) are relevant
-	 * because they are booked against the time balance.
+	 * Handle approval, cancellation, modification and deletion of leave requests of ANY type: the computed
+	 * days are recomputed and TimeDay::mapLeaveType() (one shared helper) decides how the leave type counts
+	 * (vacation / sick fulfil the target, ZA consumes the balance, other types keep the target).
 	 *
 	 * @param	string			$action		Trigger code
 	 * @param	CommonObject	$object		Holiday object
@@ -88,17 +91,16 @@ class InterfaceAnxhrTriggers extends DolibarrTriggers
 	 */
 	private function handleHolidayEvent($action, $object, User $user)
 	{
-		if (!$this->isTimeCompensationLeave($object)) {
+		if (empty($object->fk_user)) {
 			return 0;
 		}
-
-		dol_syslog("Trigger '".$this->name."' for action '".$action."' on time compensation leave id=".((int) $object->id), LOG_DEBUG);
-
 		$file = dol_buildpath('/anxhr/class/timeperiod.class.php', 0);
 		if (!file_exists($file)) {
 			return 0;
 		}
 		include_once $file;
+
+		dol_syslog("Trigger '".$this->name."' for action '".$action."' on leave id=".((int) $object->id), LOG_DEBUG);
 
 		$method = ($action == 'HOLIDAY_APPROVE' ? 'onLeaveApproved' : 'onLeaveCanceled');
 		if (class_exists('AnxhrTimeIntegration') && method_exists('AnxhrTimeIntegration', $method)) {
@@ -111,32 +113,5 @@ class InterfaceAnxhrTriggers extends DolibarrTriggers
 		}
 
 		return 0;
-	}
-
-	/**
-	 * Check if a leave request is of type time compensation (Zeitausgleich).
-	 *
-	 * @param	CommonObject	$object		Holiday object
-	 * @return	bool
-	 */
-	private function isTimeCompensationLeave($object)
-	{
-		if (empty($object->fk_type)) {
-			return false;
-		}
-
-		$sql = "SELECT code, label FROM ".$this->db->prefix()."c_holiday_types";
-		$sql .= " WHERE rowid = ".((int) $object->fk_type);
-		$resql = $this->db->query($sql);
-		if (!$resql) {
-			return false;
-		}
-		$obj = $this->db->fetch_object($resql);
-		$this->db->free($resql);
-		if (!$obj) {
-			return false;
-		}
-
-		return (strtoupper((string) $obj->code) == 'ZA' || stripos((string) $obj->label, 'Zeitausgleich') !== false);
 	}
 }

@@ -118,8 +118,8 @@ class modAnxhr extends DolibarrModules
 		// Constants (key, type, value, desc, visible, 'current' or 'allentities', deleteonunactive)
 		$this->const = array(
 			1 => array('ANXHR_DEFAULT_KV', 'chaine', 'SWOE', 'Default collective agreement code', 0, 'current', 0),
-			2 => array('ANXHR_VACATION_IN_HOURS', 'chaine', '0', 'Manage vacation in hours instead of days', 0, 'current', 0),
-			3 => array('ANXHR_CLOCK_ALLOW_SELF_CORRECTION_SAME_DAY', 'chaine', '1', 'Allow employees to correct own entries on the same day', 0, 'current', 0),
+			2 => array('ANXHR_TIMEZONE', 'chaine', 'Europe/Vienna', 'Company time zone used for working days, night work and Sundays', 0, 'current', 0),
+			3 => array('ANXHR_CLOCK_ALLOW_SELF_CORRECTION_SAME_DAY', 'chaine', '0', 'Allow employees to correct own entries on the same day', 0, 'current', 0),
 			4 => array('ANXHR_PERIOD_AUTOCREATE_DAY', 'chaine', '1', 'Day of month on which monthly periods of previous month are created', 0, 'current', 0),
 			5 => array('ANXHR_RETENTION_YEARS', 'chaine', '7', 'Retention in years after end of employment', 0, 'current', 0),
 		);
@@ -357,9 +357,11 @@ class modAnxhr extends DolibarrModules
 			return -1;
 		}
 
-		// In this Dolibarr version DolibarrModules::_load_tables() only runs llx_*.sql files (key, data and
-		// update files execution is commented out). Run them here. Errors such as "key already exists" or
-		// "record already exists" are accepted by run_sql(), so this is idempotent on re-activation.
+		// Verified for this Dolibarr version (develop 24.0): DolibarrModules::_load_tables() only runs the llx_*.sql
+		// files, the execution of *.key.sql, functions*, data*.sql and update*.sql is commented out in core.
+		// So keys and data are loaded here. Every data table has a unique key, so on re-activation run_sql()
+		// meets only accepted errors (DB_ERROR_KEY_NAME_ALREADY_EXISTS, DB_ERROR_RECORD_ALREADY_EXISTS) which it
+		// ignores without error log: this is idempotent. Remove this method once core runs these files again.
 		$this->loadKeysAndData('/anxhr/sql/');
 
 		// Permissions
