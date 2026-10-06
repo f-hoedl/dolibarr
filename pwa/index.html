@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f4e79">
+<meta name="color-scheme" content="light dark">
+<title>ANX HR</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div id="offline" class="offline" role="status" hidden></div>
+
+<main id="login" class="screen" hidden>
+	<h1 data-i18n="AppTitle"></h1>
+	<form id="loginform" class="card" autocomplete="on">
+		<label for="f-login" data-i18n="Login"></label>
+		<input id="f-login" name="login" autocomplete="username" required>
+		<label for="f-pass" data-i18n="Password"></label>
+		<input id="f-pass" name="password" type="password" autocomplete="current-password">
+		<details>
+			<summary data-i18n="UseApiKey"></summary>
+			<label for="f-key" data-i18n="ApiKey"></label>
+			<input id="f-key" name="apikey" autocomplete="off">
+			<p class="hint" data-i18n="SsoHint"></p>
+		</details>
+		<p id="login-err" class="err" role="alert"></p>
+		<button type="submit" class="btn primary" data-i18n="SignIn"></button>
+	</form>
+</main>
+
+<div id="app" hidden>
+	<header class="top">
+		<div>
+			<div class="hello" id="u-name"></div>
+			<div class="sub" id="u-date"></div>
+		</div>
+		<button class="iconbtn" id="btn-logout" type="button" data-i18n-aria="Logout">
+			<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+		</button>
+	</header>
+
+	<section id="tab-time" class="tab">
+		<div class="card state">
+			<div class="badge" id="state-badge"></div>
+			<div class="timer" id="timer" role="status" aria-live="polite"></div>
+			<div class="sub" id="timer-label"></div>
+			<button id="btn-primary" class="btn primary big" type="button"></button>
+			<button id="btn-break" class="btn secondary" type="button"></button>
+			<label class="check"><input type="checkbox" id="homeoffice"> <span data-i18n="HomeOffice"></span></label>
+			<p id="queue-info" class="hint"></p>
+		</div>
+		<div class="grid2">
+			<div class="card kpi"><div class="sub" data-i18n="WorkedToday"></div><div class="val" id="k-worked"></div><div class="sub" id="k-target"></div></div>
+			<div class="card kpi"><div class="sub" data-i18n="BalanceMonth"></div><div class="val" id="k-balance"></div></div>
+		</div>
+		<div class="card"><h2 data-i18n="Today"></h2><ol class="timeline" id="timeline"></ol></div>
+		<div class="card"><h2 data-i18n="Last7"></h2><ul class="days" id="days"></ul></div>
+	</section>
+
+	<section id="tab-docs" class="tab" hidden>
+		<div class="card"><h2 data-i18n="Documents"></h2><ul class="docs" id="docs"></ul><p class="hint" data-i18n="DocsHint"></p></div>
+	</section>
+
+	<nav class="tabs" role="tablist">
+		<button role="tab" id="t-time" aria-selected="true" aria-controls="tab-time" type="button">
+			<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 7v5l3 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+			<span data-i18n="TabTime"></span>
+		</button>
+		<button role="tab" id="t-docs" aria-selected="false" aria-controls="tab-docs" type="button">
+			<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h8l4 4v14H6z M14 3v4h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+			<span data-i18n="TabDocs"></span><span class="count" id="unread" hidden></span>
+		</button>
+	</nav>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

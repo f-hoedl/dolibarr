@@ -285,6 +285,71 @@ class TimeEntry extends CommonObject
 	}
 
 	/**
+	 * Record a clock action for a user with the same rules for every channel (web page, PWA/API).
+	 * Checks locked days, the allowed next action and the double click protection, creates the entry
+	 * and recomputes the shift day and today.
+	 *
+	 * @param	DoliDB	$db			Database handler
+	 * @param	User	$actor		User doing the action (the employee)
+	 * @param	string	$type		'in'|'out'|'break_start'|'break_end'
+	 * @param	int		$homeoffice	1=home office
+	 * @param	string	$source		Entry source ('web', 'pwa', ...)
+	 * @param	int		$ts			Timestamp of the action (0=now)
+	 * @return	array{result:int,code:string,error:string,id:int}	result >0 created, 0 ignored (duplicate), <0 error; code: Ok|DayLocked|ActionNotAllowed|AlreadyRecorded|Error
+	 */
+	public static function clockForUser($db, User $actor, $type, $homeoffice, $source, $ts = 0)
+	{
+		$now = dol_now();
+		$ts = empty($ts) ? $now : (int) $ts;
+		$today = self::timestampToDay($ts);
+		$yesterday = self::timestampToDay(self::dayToTimestamp($today) - 12 * 3600);
+		$state = self::getLastStateForUser($db, $actor->id);
+		$allowed = self::getNextActions($state);
+		$last = self::getLastEntryForUser($db, $actor->id);
+
+		// Locked days (approved or exported periods) cannot receive new entries: today, and for a running shift its start day.
+		require_once __DIR__.'/timeday.class.php';
+		$tday = new TimeDay($db);
+		$lockdays = array($today);
+		if ($state !== 'out' && !empty($last)) {
+			$lockdays[] = self::timestampToDay($last['ts']);
+		}
+		foreach (array_unique($lockdays) as $lockday) {
+			$lockrow = $tday->fetchRowForUserDay($actor->id, $lockday);
+			if (is_array($lockrow) && !empty($lockrow['locked'])) {
+				return array('result' => -1, 'code' => 'DayLocked', 'error' => '', 'id' => 0);
+			}
+		}
+		if (!in_array($type, $allowed, true)) {
+			return array('result' => -1, 'code' => 'ActionNotAllowed', 'error' => '', 'id' => 0);
+		}
+		if (!empty($last) && $ts < $last['ts']) {
+			// An action (e.g. replayed offline) cannot be placed before the last recorded one.
+			return array('result' => -1, 'code' => 'ActionNotAllowed', 'error' => '', 'id' => 0);
+		}
+		if (!empty($last) && $last['type'] === $type && ($ts - $last['ts']) < 60) {
+			// Double click protection: same action within one minute is ignored.
+			return array('result' => 0, 'code' => 'AlreadyRecorded', 'error' => '', 'id' => (int) $last['id']);
+		}
+		$entry = new self($db);
+		$entry->fk_user = $actor->id;
+		$entry->entry_type = $type;
+		$entry->entry_datetime = $ts;
+		$entry->homeoffice = $homeoffice ? 1 : 0;
+		$entry->source = $source;
+		$entry->ip = anxhrTimeClientIp();
+		$entry->status = self::STATUS_ACTIVE;
+		$id = $entry->create($actor);
+		if ($id <= 0) {
+			return array('result' => -1, 'code' => 'Error', 'error' => $entry->error.' '.implode(', ', (array) $entry->errors), 'id' => 0);
+		}
+		// A shift belongs to the day of its clock in: recompute yesterday too (night shifts).
+		$tday->recomputeForUserDay($actor, $actor->id, $yesterday);
+		$tday->recomputeForUserDay($actor, $actor->id, $today);
+		return array('result' => 1, 'code' => 'Ok', 'error' => '', 'id' => (int) $id);
+	}
+
+	/**
 	 * Return the active entries belonging to a working day of a user.
 	 *
 	 * @param	int		$userid		User id
