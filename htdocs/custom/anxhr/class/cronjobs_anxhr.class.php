@@ -192,12 +192,14 @@ class CronjobsAnxhr
 
 	/**
 	 * Create monthly time periods of the previous month, on the day of month set in ANXHR_PERIOD_AUTOCREATE_DAY.
-	 * Contract: static TimePeriod::createPeriodsForMonth(DoliDB $db, int $year, int $month) returning int.
+	 * Contract: static TimePeriod::createForAllUsers(DoliDB $db, User $actor, int $year, int $month) returning int.
 	 *
 	 * @return	int		0 if OK, <0 if KO
 	 */
 	public function createMonthlyPeriods()
 	{
+		global $user;
+
 		$this->output = '';
 
 		$day = getDolGlobalInt('ANXHR_PERIOD_AUTOCREATE_DAY', 1);
@@ -207,16 +209,16 @@ class CronjobsAnxhr
 			return 0;
 		}
 
-		$classname = $this->loadTimeClass('/anxhr/class/timeperiod.class.php', array('TimePeriod', 'AnxhrTimePeriod'), 'createPeriodsForMonth');
+		$classname = $this->loadTimeClass('/anxhr/class/timeperiod.class.php', array('TimePeriod', 'AnxhrTimePeriod'), 'createForAllUsers');
 		if (!$classname) {
 			$this->output = 'Time module classes not present';
 			return 0;
 		}
 
 		$prev = dol_get_prev_month((int) $now['mon'], (int) $now['year']);
-		$result = call_user_func(array($classname, 'createPeriodsForMonth'), $this->db, (int) $prev['year'], (int) $prev['month']);
+		$result = call_user_func(array($classname, 'createForAllUsers'), $this->db, $user, (int) $prev['year'], (int) $prev['month']);
 		if (is_numeric($result) && $result < 0) {
-			$this->error = $classname.'::createPeriodsForMonth failed';
+			$this->error = $classname.'::createForAllUsers failed';
 			$this->output = $this->error;
 			return -1;
 		}

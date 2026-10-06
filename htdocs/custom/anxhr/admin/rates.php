@@ -96,9 +96,10 @@ if (in_array($action, array('add', 'update'), true) && $_SERVER['REQUEST_METHOD'
 	$object->code = GETPOST('code', 'aZ09');
 	$object->label = GETPOST('label', 'alphanohtml');
 	$object->valid_from = GETPOSTDATE('valid_from', '00:00:00', 'tzserver');
-	$object->amount = price2num(GETPOST('amount', 'alphanohtml'), 4);
+	$amount = anxhrTimeParseNumber(GETPOST('amount', 'alphanohtml'));
+	$object->amount = ($amount === null ? '' : $amount);
 	$cap = GETPOST('cap_per_year', 'alphanohtml');
-	$object->cap_per_year = ($cap === '' ? null : price2num($cap, 2));
+	$object->cap_per_year = anxhrTimeParseNumber($cap);
 	$object->note = GETPOST('note', 'alphanohtml');
 	if (empty($object->code) || empty($object->valid_from) || $object->amount === '' || (float) $object->amount < 0) {
 		setEventMessages($langs->trans('ErrorFieldRequired', $langs->transnoentitiesnoconv('Code').', '.$langs->transnoentitiesnoconv('AnxhrValidFrom').', '.$langs->transnoentitiesnoconv('Amount')), null, 'errors');

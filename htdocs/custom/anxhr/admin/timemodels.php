@@ -89,7 +89,7 @@ if (GETPOST('cancel', 'alpha')) {
 
 if ($action == 'setdefaults' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 	dolibarr_set_const($db, 'ANXHR_TIME_DEFAULT_MODEL', (string) GETPOSTINT('ANXHR_TIME_DEFAULT_MODEL'), 'chaine', 0, '', $conf->entity);
-	dolibarr_set_const($db, 'ANXHR_TIME_DEFAULT_KV', GETPOST('ANXHR_TIME_DEFAULT_KV', 'aZ09'), 'chaine', 0, '', $conf->entity);
+	dolibarr_set_const($db, 'ANXHR_DEFAULT_KV', GETPOST('ANXHR_DEFAULT_KV', 'aZ09'), 'chaine', 0, '', $conf->entity);
 	setEventMessages($langs->trans('SetupSaved'), null, 'mesgs');
 	header('Location: '.$_SERVER['PHP_SELF']);
 	exit;
@@ -99,7 +99,7 @@ if (in_array($action, array('addmodel', 'updatemodel'), true) && $_SERVER['REQUE
 	$model->ref = GETPOST('ref', 'alphanohtml');
 	$model->label = GETPOST('label', 'alphanohtml');
 	$model->model_type = GETPOST('model_type', 'aZ09');
-	$model->weekly_hours = (float) price2num(GETPOST('weekly_hours', 'alphanohtml'));
+	$model->weekly_hours = (float) anxhrTimeParseNumber(GETPOST('weekly_hours', 'alphanohtml'));
 	$daily = array();
 	$sum = 0;
 	foreach (array_keys($weekdays) as $d) {
@@ -151,12 +151,12 @@ if (in_array($action, array('addkv', 'updatekv'), true) && $_SERVER['REQUEST_MET
 	$kv->kv_code = GETPOST('kv_code', 'aZ09');
 	$kv->label = GETPOST('label', 'alphanohtml');
 	$kv->valid_from = GETPOSTDATE('valid_from', '00:00:00', 'tzserver');
-	$kv->weekly_hours = (float) price2num(GETPOST('weekly_hours', 'alphanohtml'));
+	$kv->weekly_hours = (float) anxhrTimeParseNumber(GETPOST('weekly_hours', 'alphanohtml'));
 	$kv->ot_pct = GETPOSTINT('ot_pct');
 	$kv->ot_night_pct = GETPOSTINT('ot_night_pct');
 	$kv->ot_sunday_pct = GETPOSTINT('ot_sunday_pct');
 	$kv->parttime_extra_pct = GETPOSTINT('parttime_extra_pct');
-	$kv->za_factor = (float) price2num(GETPOST('za_factor', 'alphanohtml'));
+	$kv->za_factor = (float) anxhrTimeParseNumber(GETPOST('za_factor', 'alphanohtml'));
 	$kv->dec24_free = GETPOSTINT('dec24_free') ? 1 : 0;
 	$kv->dec31_free = GETPOSTINT('dec31_free') ? 1 : 0;
 	$kv->night_start = anxhrTimeCleanHhmm(GETPOST('night_start', 'alphanohtml')) ?: '22:00';
@@ -229,13 +229,13 @@ foreach ($models as $m) {
 	$modeloptions[$m->id] = $m->ref.' - '.$m->label;
 }
 print '<tr class="oddeven"><td>'.$form->textwithpicto($langs->trans('AnxhrDefaultTimeModel'), $langs->trans('AnxhrDefaultTimeModelHelp')).'</td><td>'.$form->selectarray('ANXHR_TIME_DEFAULT_MODEL', $modeloptions, getDolGlobalInt('ANXHR_TIME_DEFAULT_MODEL'), 1, 0, 0, '', 0, 0, 0, '', 'minwidth200').'</td></tr>';
-print '<tr class="oddeven"><td>'.$form->textwithpicto($langs->trans('AnxhrDefaultKv'), $langs->trans('AnxhrDefaultKvHelp')).'</td><td>'.$form->selectarray('ANXHR_TIME_DEFAULT_KV', $kvcodes, getDolGlobalString('ANXHR_TIME_DEFAULT_KV', 'AZG'), 1, 0, 0, '', 0, 0, 0, '', 'minwidth200').'</td></tr>';
+print '<tr class="oddeven"><td>'.$form->textwithpicto($langs->trans('AnxhrDefaultKv'), $langs->trans('AnxhrDefaultKvHelp')).'</td><td>'.$form->selectarray('ANXHR_DEFAULT_KV', $kvcodes, getDolGlobalString('ANXHR_DEFAULT_KV', 'SWOE'), 1, 0, 0, '', 0, 0, 0, '', 'minwidth200').'</td></tr>';
 print '</table>';
 print '<div class="center"><input type="submit" class="button button-save" value="'.dol_escape_htmltag($langs->trans('Save')).'"></div>';
 print '</form><br>';
 
 // Time models list
-$newmodel = dolGetButtonTitle($langs->trans('AnxhrNewTimeModel'), '', 'fa fa-plus-circle', $_SERVER['PHP_SELF'].'?action=createmodel');
+$newmodel = dolGetButtonTitle($langs->trans('AnxhrNewTimeModel'), '', 'fa fa-plus-circle', $_SERVER['PHP_SELF'].'?action=createmodel&token='.newToken());
 print load_fiche_titre($langs->trans('AnxhrTimeModels'), $newmodel, 'fa-business-time');
 print '<div class="div-table-responsive">';
 print '<table class="noborder centpercent">';
@@ -260,7 +260,7 @@ foreach ($models as $m) {
 	print '<td>'.dol_escape_htmltag($m->kv_code).'</td>';
 	print '<td class="center">'.$m->getLibStatut(5).'</td>';
 	print '<td class="right nowraponall">';
-	print '<a class="editfielda marginrightonly" href="'.$_SERVER['PHP_SELF'].'?action=editmodel&id='.$m->id.'">'.img_edit().'</a>';
+	print '<a class="editfielda marginrightonly" href="'.$_SERVER['PHP_SELF'].'?action=editmodel&id='.$m->id.'&token='.newToken().'">'.img_edit().'</a>';
 	print '<a href="'.$_SERVER['PHP_SELF'].'?action=deletemodel&id='.$m->id.'&token='.newToken().'">'.img_delete().'</a>';
 	print '</td></tr>';
 }
@@ -303,7 +303,7 @@ if ($action == 'createmodel' || $action == 'editmodel') {
 
 // KV rates
 print '<br>';
-$newkv = dolGetButtonTitle($langs->trans('AnxhrNewKvRate'), '', 'fa fa-plus-circle', $_SERVER['PHP_SELF'].'?action=createkv');
+$newkv = dolGetButtonTitle($langs->trans('AnxhrNewKvRate'), '', 'fa fa-plus-circle', $_SERVER['PHP_SELF'].'?action=createkv&token='.newToken());
 print load_fiche_titre($langs->trans('AnxhrKvRates'), $newkv, 'fa-balance-scale');
 print '<div class="div-table-responsive">';
 print '<table class="noborder centpercent">';
@@ -325,7 +325,7 @@ foreach ($kvlist as $r) {
 	print '<td class="center">'.yn($r->dec31_free).'</td>';
 	print '<td class="hideonsmartphone">'.dol_escape_htmltag($r->night_start.' - '.$r->night_end).'</td>';
 	print '<td class="right nowraponall">';
-	print '<a class="editfielda marginrightonly" href="'.$_SERVER['PHP_SELF'].'?action=editkv&kvid='.$r->id.'">'.img_edit().'</a>';
+	print '<a class="editfielda marginrightonly" href="'.$_SERVER['PHP_SELF'].'?action=editkv&kvid='.$r->id.'&token='.newToken().'">'.img_edit().'</a>';
 	print '<a href="'.$_SERVER['PHP_SELF'].'?action=deletekv&kvid='.$r->id.'&token='.newToken().'">'.img_delete().'</a>';
 	print '</td></tr>';
 }

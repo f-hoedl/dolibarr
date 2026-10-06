@@ -22,6 +22,7 @@
  */
 
 require_once DOL_DOCUMENT_ROOT.'/core/class/commonobject.class.php';
+require_once DOL_DOCUMENT_ROOT.'/core/lib/date.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/user/class/user.class.php';
 require_once __DIR__.'/../lib/anxhr_hr.lib.php';
 
@@ -447,12 +448,39 @@ class HrContract extends CommonObject
 				return -1;
 			}
 		}
-		if ($this->isCurrent()) {
+		// Sync the user card when this is the most recent active contract, so a future start date
+		// of a new hire is visible on the user card too.
+		if ($this->isLatestActive()) {
 			if ($this->setUserDenormalizedFields($user) < 0) {
 				return -1;
 			}
 		}
 		return 1;
+	}
+
+	/**
+	 * Return true if no other active contract of the same employee starts later than this one
+	 *
+	 * @return bool
+	 */
+	public function isLatestActive()
+	{
+		if (empty($this->date_start) || empty($this->fk_user)) {
+			return false;
+		}
+		$sql = "SELECT COUNT(t.rowid) as nb FROM ".$this->db->prefix().$this->table_element." as t";
+		$sql .= " WHERE t.fk_user = ".((int) $this->fk_user);
+		$sql .= " AND t.entity IN (".getEntity($this->element).")";
+		$sql .= " AND t.status = ".self::STATUS_ACTIVE;
+		$sql .= " AND t.rowid <> ".((int) $this->id);
+		$sql .= " AND t.date_start > '".$this->db->idate($this->date_start)."'";
+		$resql = $this->db->query($sql);
+		if (!$resql) {
+			return false;
+		}
+		$obj = $this->db->fetch_object($resql);
+		$this->db->free($resql);
+		return ((int) $obj->nb == 0);
 	}
 
 	/**

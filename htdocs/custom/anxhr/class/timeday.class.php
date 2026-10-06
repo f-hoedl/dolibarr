@@ -563,7 +563,7 @@ class TimeDay extends CommonObject
 	 */
 	protected function getKvArray(array $contract, array $model, $day)
 	{
-		$code = $contract['kv_code'] !== '' ? $contract['kv_code'] : (!empty($model['kv_code']) ? $model['kv_code'] : getDolGlobalString('ANXHR_TIME_DEFAULT_KV', 'AZG'));
+		$code = $contract['kv_code'] !== '' ? $contract['kv_code'] : (!empty($model['kv_code']) ? $model['kv_code'] : getDolGlobalString('ANXHR_DEFAULT_KV', 'SWOE'));
 		if (!isset($this->cacheKv[$code])) {
 			$this->cacheKv[$code] = array();
 			$kvobj = new KvRate($this->db);
