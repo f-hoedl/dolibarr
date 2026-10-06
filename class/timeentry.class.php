@@ -20,11 +20,14 @@
  * \ingroup     anxhr
  * \brief       Clock entry (in, out, break_start, break_end) - CRUD class
  *
- * Time zone convention of the time module: every computation uses the server time zone
- * ('tzserver', the company time zone), so results never depend on who triggers a recomputation.
+ * Time zone convention of the time module: entries are stored as absolute timestamps ($db->idate()),
+ * every working day / wall clock computation uses the company time zone (constant ANXHR_TIMEZONE,
+ * default Europe/Vienna, see anxhrTimeZone()), so results never depend on the PHP server zone or on
+ * who triggers a recomputation.
  */
 
 require_once DOL_DOCUMENT_ROOT.'/core/class/commonobject.class.php';
+require_once __DIR__.'/../lib/anxhr_time.lib.php';
 
 /**
  * Class TimeEntry
@@ -313,8 +316,10 @@ class TimeEntry extends CommonObject
 		if ($ts === null) {
 			return -1;
 		}
-		$from = $ts - 86400;
-		$to = $ts + 2 * 86400 - 1;
+		// Day boundaries in the company time zone (days have 23 or 25 hours on DST change days).
+		$dayEnd = self::dayEndTimestamp($day);
+		$from = self::dayToTimestamp(self::timestampToDay($ts - 43200));
+		$to = self::dayEndTimestamp(self::timestampToDay($dayEnd + 43200)) - 1;
 		$sql = "SELECT rowid, entry_type, entry_datetime, homeoffice, source, fk_correction FROM ".$this->db->prefix().$this->table_element;
 		$sql .= " WHERE fk_user = ".((int) $userid)." AND status = ".self::STATUS_ACTIVE;
 		$sql .= " AND entity IN (".getEntity($this->element).")";
@@ -335,14 +340,14 @@ class TimeEntry extends CommonObject
 				'id' => (int) $obj->rowid,
 				'type' => (string) $obj->entry_type,
 				'ts' => $ets,
-				'time' => dol_print_date($ets, '%Y-%m-%d %H:%M:%S', 'tzserver'),
+				'time' => anxhrTsToTz($ets, 'Y-m-d H:i:s'),
 				'homeoffice' => (int) $obj->homeoffice,
 				'source' => (string) $obj->source,
 				'fk_correction' => (int) $obj->fk_correction,
 			);
 			if ($ets < $ts) {
 				$prev[] = $row;
-			} elseif ($ets < $ts + 86400) {
+			} elseif ($ets < $dayEnd) {
 				$cur[] = $row;
 			} else {
 				$next[] = $row;
@@ -394,14 +399,14 @@ class TimeEntry extends CommonObject
 	public function fetchRangeGroupedByDay($userid, $first, $last)
 	{
 		$from = self::dayToTimestamp($first);
-		$to = self::dayToTimestamp($last);
+		$to = self::dayEndTimestamp($last);
 		if ($from === null || $to === null) {
 			return -1;
 		}
 		$sql = "SELECT rowid, entry_type, entry_datetime, homeoffice, source FROM ".$this->db->prefix().$this->table_element;
 		$sql .= " WHERE fk_user = ".((int) $userid)." AND status = ".self::STATUS_ACTIVE;
 		$sql .= " AND entity IN (".getEntity($this->element).")";
-		$sql .= " AND entry_datetime >= '".$this->db->idate($from)."' AND entry_datetime < '".$this->db->idate($to + 86400)."'";
+		$sql .= " AND entry_datetime >= '".$this->db->idate($from)."' AND entry_datetime < '".$this->db->idate($to)."'";
 		$sql .= " ORDER BY entry_datetime ASC, rowid ASC";
 		$sql .= $this->db->plimit(5000);
 		$resql = $this->db->query($sql);
@@ -429,7 +434,7 @@ class TimeEntry extends CommonObject
 		$parts = array();
 		$start = null;
 		foreach ($entries as $e) {
-			$hm = dol_print_date($e['ts'], '%H:%M', 'tzserver');
+			$hm = anxhrTsToTz($e['ts'], 'H:i');
 			if ($e['type'] === 'in' || $e['type'] === 'break_end') {
 				if ($start !== null) {
 					$parts[] = $start.'-?';
@@ -449,7 +454,8 @@ class TimeEntry extends CommonObject
 	/**
 	 * Check if a user may approve time data (corrections, periods) of an employee:
 	 * time admin, or time approve right and employee is a direct or indirect subordinate.
-	 * Self approval is only allowed to time admins.
+	 * Nobody approves his own time data (four eyes principle), not even a time admin, unless the
+	 * constant ANXHR_ALLOW_SELF_APPROVAL is set (very small companies).
 	 *
 	 * @param	User	$approver	Approver
 	 * @param	int		$userid		Employee id
@@ -458,39 +464,64 @@ class TimeEntry extends CommonObject
 	public static function userCanApproveFor(User $approver, $userid)
 	{
 		$userid = (int) $userid;
+		if ($userid <= 0) {
+			return false;
+		}
+		if ($userid == (int) $approver->id && !getDolGlobalInt('ANXHR_ALLOW_SELF_APPROVAL')) {
+			return false;
+		}
 		if ($approver->hasRight('anxhr', 'time', 'admin')) {
 			return true;
 		}
-		if (!$approver->hasRight('anxhr', 'time', 'approve') || $userid == $approver->id) {
+		if (!$approver->hasRight('anxhr', 'time', 'approve')) {
 			return false;
+		}
+		if ($userid == (int) $approver->id) {
+			// Self approval allowed by setup.
+			return true;
 		}
 		$childs = $approver->getAllChildIds(0);
 		return is_array($childs) && in_array($userid, array_map('intval', $childs), true);
 	}
 
 	/**
-	 * Convert 'Y-m-d' into timestamp of midnight in the server (company) time zone.
+	 * Convert 'Y-m-d' into timestamp of midnight in the company time zone (ANXHR_TIMEZONE).
 	 *
 	 * @param	string	$day	Day
 	 * @return	int|null
 	 */
 	public static function dayToTimestamp($day)
 	{
-		if (!preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', (string) $day, $m)) {
+		if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $day)) {
 			return null;
 		}
-		$ts = dol_mktime(0, 0, 0, (int) $m[2], (int) $m[3], (int) $m[1], 'tzserver');
-		return ($ts === '' || $ts === false) ? null : (int) $ts;
+		return anxhrTzToTs($day);
 	}
 
 	/**
-	 * Convert a timestamp into 'Y-m-d' in the server (company) time zone.
+	 * Convert a timestamp into 'Y-m-d' in the company time zone (ANXHR_TIMEZONE).
 	 *
 	 * @param	int		$ts		Timestamp
 	 * @return	string
 	 */
 	public static function timestampToDay($ts)
 	{
-		return dol_print_date($ts, '%Y-%m-%d', 'tzserver');
+		return anxhrTsToTz($ts, 'Y-m-d');
+	}
+
+	/**
+	 * Return the timestamp of the midnight following a day in the company time zone
+	 * (a day is 23 or 25 hours long on DST change days).
+	 *
+	 * @param	string	$day	Day Y-m-d
+	 * @return	int|null
+	 */
+	public static function dayEndTimestamp($day)
+	{
+		$ts = self::dayToTimestamp($day);
+		if ($ts === null) {
+			return null;
+		}
+		return anxhrTzToTs(gmdate('Y-m-d', gmmktime(12, 0, 0, (int) substr($day, 5, 2), (int) substr($day, 8, 2) + 1, (int) substr($day, 0, 4))));
 	}
 }

@@ -68,8 +68,6 @@ AnxhrCorrection = Korrektur
 #
 # Tageswerte
 #
-AnxhrTarget = Soll
-AnxhrWorked = Ist
 AnxhrBreak = Pause
 AnxhrDiff = Differenz
 AnxhrOvertime50 = Überstunden 50%%
@@ -85,6 +83,7 @@ AnxhrAbsenceSick = Krankenstand
 AnxhrAbsenceZa = Zeitausgleich
 AnxhrAbsenceHoliday = Freistellung
 AnxhrAbsenceSpecial = Sonderurlaub
+AnxhrAbsenceOther = Sonstige Abwesenheit
 AnxhrOpenEntry = Offene Buchung
 AnxhrLocked = Gesperrt (Monat abgeschlossen)
 AnxhrComputedAt = Berechnet am
@@ -132,8 +131,10 @@ AnxhrCorrectionRefused = Abgelehnt
 AnxhrCorrectionCreated = Korrektur beantragt
 AnxhrCorrectionApplied = Korrektur übernommen
 AnxhrAutoApprovedByHr = Durch HR erfasst
+AnxhrAutoAppliedSameDay = Eigene Korrektur des laufenden Tages, ohne Genehmigung übernommen (Einstellung)
 AnxhrErrorNoEntries = Bitte mindestens eine Buchung (Art und Uhrzeit) eingeben.
 AnxhrErrorDayLocked = Dieser Tag gehört zu einem abgeschlossenen Monat und kann nicht geändert werden. HR muss den Monat zuerst wieder öffnen.
+AnxhrErrorDayChangedSinceRequest = Die Buchungen dieses Tages wurden nach dem Korrekturantrag geändert. Bitte diesen Antrag ablehnen und einen neuen stellen.
 AnxhrErrorCorrectionAlreadyApproved = Eine genehmigte Korrektur kann nicht gelöscht werden.
 
 #
@@ -152,6 +153,8 @@ AnxhrReopen = Wieder öffnen
 AnxhrCreatePeriodsForMonth = Monatsabschlüsse anlegen
 AnxhrPeriodsCreated = %s Monatsabschluss/-abschlüsse angelegt oder aktualisiert
 AnxhrExportCsv = CSV-Export (Lohnverrechnung)
+AnxhrExportSkippedUnapproved = %s Monatsblätter dieses Monats sind noch nicht genehmigt und nicht Teil des Lohnexports.
+AnxhrWeekTotal = KW %s
 AnxhrBalanceStart = Saldo Beginn
 AnxhrBalanceEnd = Saldo Ende
 AnxhrOvertimePaid = Ausbezahlte Überstunden
@@ -185,7 +188,6 @@ AnxhrModelTypeFixed = Fixe Arbeitszeit
 AnxhrModelTypeFlex = Gleitzeit
 AnxhrModelTypeSelfdetermined = Selbstbestimmte Arbeitszeit
 AnxhrModelTypeHelp = Fix: Stunden über dem Soll sind Überstunden. Gleitzeit (§ 4b AZG): Stunden über dem Soll sind Gleitzeitguthaben bis zur täglichen Normalarbeitszeit-Höchstgrenze. Selbstbestimmt: wie Gleitzeit, Aufzeichnung der Dauer genügt (§ 26 Abs 3 AZG).
-AnxhrWeeklyHours = Wochenstunden
 AnxhrWeeklyHoursModelHelp = Leer lassen, um die Summe der Tagessoll-Zeiten zu verwenden.
 AnxhrDailyMinutes = Tagessoll (hh:mm)
 AnxhrDailyMinutesHelp = Soll je Wochentag als hh:mm. Weichen die Vertragsstunden von den Modellstunden ab, wird das Soll anteilig umgerechnet.
@@ -205,7 +207,6 @@ AnxhrBreakRuleRequired = Pausenbuchung verpflichtend
 AnxhrBreakRuleHelp = Bei mehr als 6 Stunden Arbeitszeit ist eine Pause von 30 Minuten nötig (§ 11 AZG). Automatisch: fehlende Minuten werden abgezogen und vermerkt. Prüfen / verpflichtend: ein Verstoß wird angezeigt.
 AnxhrNormalDailyMax = Tägliche Normalarbeitszeit-Höchstgrenze
 AnxhrNormalDailyMaxHelp = Üblich 10:00 (§ 9 AZG, § 4b AZG). Stunden darüber sind Überstunden und werden markiert.
-AnxhrKvCode = Kollektivvertrag (Code)
 AnxhrNewKvRate = Neuer KV-Parametersatz
 AnxhrEditKvRate = KV-Parametersatz bearbeiten
 AnxhrValidFrom = Gültig ab

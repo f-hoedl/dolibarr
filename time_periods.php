@@ -254,6 +254,17 @@ if ($canexport) {
 	print anxhrTimePeriodButton('exportcsv', 0, $year, $month, $langs->trans('AnxhrExportCsv'), false, 'butAction');
 }
 print '</div>';
+if ($canexport) {
+	$nbunapproved = 0;
+	foreach ($rows as $obj) {
+		if (!in_array((int) $obj->status, array(TimePeriod::STATUS_APPROVED, TimePeriod::STATUS_EXPORTED), true)) {
+			$nbunapproved++;
+		}
+	}
+	if ($nbunapproved > 0) {
+		print '<div class="opacitymedium right">'.img_warning().' '.$langs->trans('AnxhrExportSkippedUnapproved', $nbunapproved).'</div>';
+	}
+}
 
 llxFooter();
 $db->close();
@@ -303,12 +314,31 @@ function anxhrTimePeriodButton($action, $id, $year, $month, $label, $withreason 
  */
 function anxhrTimeExportCsv($db, $langs, $user, $year, $month)
 {
+	// Only approved (2) or already exported (3) periods are payroll relevant. Unapproved periods are skipped
+	// and counted, the user gets a notice on the next page (the CSV download itself cannot show it).
+	$exportable = array(TimePeriod::STATUS_APPROVED, TimePeriod::STATUS_EXPORTED);
+	$sql = "SELECT COUNT(p.rowid) as nb FROM ".$db->prefix()."anxhr_time_period as p";
+	$sql .= " WHERE p.entity IN (".getEntity('anxhr_time_period').")";
+	$sql .= " AND p.year = ".((int) $year)." AND p.month = ".((int) $month);
+	$sql .= " AND p.status NOT IN (".$db->sanitize(implode(',', $exportable)).")";
+	$resql = $db->query($sql);
+	$nbskipped = 0;
+	if ($resql) {
+		$objcount = $db->fetch_object($resql);
+		$nbskipped = $objcount ? (int) $objcount->nb : 0;
+		$db->free($resql);
+	}
+	if ($nbskipped > 0) {
+		setEventMessages($langs->trans('AnxhrExportSkippedUnapproved', $nbskipped), null, 'warnings');
+	}
+
 	$sql = "SELECT p.rowid, p.fk_user, p.year, p.month, p.target_min, p.worked_min, p.balance_start_min, p.balance_end_min, p.overtime50_min, p.overtime100_min,";
 	$sql .= " p.extra_parttime_min, p.night_min, p.vacation_days, p.sick_days, p.status, u.login, u.ref_employee, u.firstname, u.lastname";
 	$sql .= " FROM ".$db->prefix()."anxhr_time_period as p";
 	$sql .= " INNER JOIN ".$db->prefix()."user as u ON u.rowid = p.fk_user";
 	$sql .= " WHERE p.entity IN (".getEntity('anxhr_time_period').")";
 	$sql .= " AND p.year = ".((int) $year)." AND p.month = ".((int) $month);
+	$sql .= " AND p.status IN (".$db->sanitize(implode(',', $exportable)).")";
 	$sql .= $db->order('u.lastname,u.firstname', 'ASC,ASC');
 	$sql .= $db->plimit(5000);
 	$resql = $db->query($sql);
@@ -364,12 +394,7 @@ function anxhrTimeExportCsv($db, $langs, $user, $year, $month)
 	}
 	$db->free($resql);
 
-	// Mark approved periods as exported (bookings stay locked).
-	foreach ($toexport as $pid) {
-		$p = new TimePeriod($db);
-		if ($p->fetch($pid) > 0) {
-			$p->setExported($user);
-		}
-	}
+	// Mark approved periods as exported in one batch (bookings stay locked).
+	TimePeriod::setExportedBatch($db, $user, $toexport);
 	$db->close();
 }

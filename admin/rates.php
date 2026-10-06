@@ -169,7 +169,7 @@ if (empty($rates)) {
 	print '<tr class="oddeven"><td colspan="8"><span class="opacitymedium">'.$langs->trans('NoRecordFound').'</span></td></tr>';
 }
 // Rows are sorted by code then valid_from DESC: the first row per code with valid_from <= today is the current one.
-$today = dol_print_date(dol_now(), '%Y-%m-%d', 'tzserver');
+$today = anxhrTsToTz(dol_now(), 'Y-m-d');
 $currentDone = array();
 foreach ($rates as $r) {
 	if ($search_code !== '' && $r->code !== $search_code) {

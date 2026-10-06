@@ -789,7 +789,12 @@ function anxhrListExportCsv($db, $sql, $object, $arrayfields, $filename)
 		$object->setVarsFromFetchObj($obj);
 		$line = array();
 		foreach ($columns as $key => $val) {
-			$line[] = anxhrGetExportValue($object, $key, $val, $users);
+			$cell = (string) anxhrGetExportValue($object, $key, $val, $users);
+			// Protect against CSV formula injection (same rule as the time export)
+			if (!is_numeric($cell) && preg_match('/^[=+\-@]/', $cell)) {
+				$cell = "'".$cell;
+			}
+			$line[] = $cell;
 		}
 		fputcsv($fh, $line, ';', '"', '\\');
 	}

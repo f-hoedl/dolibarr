@@ -30,6 +30,14 @@
 
 /**
  * Class TimeEngine
+ *
+ * Known simplifications (not implemented yet, to be done before productive payroll use):
+ * TODO Weekly averaging of normal working time (paragraph 4 (6) AZG, KV "Durchrechnung"): today every day is evaluated alone.
+ * TODO KV band between 37/38.5 and 40 hours ("Mehrstunden" with KV specific surcharge, e.g. SWOE-KV, IT-KV): treated as overtime 50.
+ * TODO Part-time Mehrarbeit compensated within the quarter or the flexitime period is surcharge free (paragraph 19d (3b) AZG).
+ * TODO Split breaks (paragraph 11 (1) AZG: 2 x 15 or 3 x 10 minutes when agreed): only the total break length is checked.
+ * TODO Weekly rest of 36 hours (paragraph 3, 4 ARG) and weekend rest: not checked.
+ * TODO Average maximum of 48 hours per week over 17 weeks (paragraph 9 (4) AZG): only the absolute 60 hours per week is checked.
  */
 class TimeEngine
 {
@@ -192,26 +200,34 @@ class TimeEngine
 		$ot100 = 0;
 		$extraPartTime = 0;
 		if (!$isFreeKvDay) {
-			// Night work and work on Sundays / public holidays carry the 100 percent surcharge
-			// (paragraph 10 AZG plus KV, e.g. SWOE-KV: 100 percent at night, Sunday, public holiday).
-			$ot100 = $premium;
+			// Surcharges (paragraph 10 AZG) apply to overtime minutes only. Night or Sunday / public holiday
+			// minutes worked WITHIN the daily target are normal working time: they are reported separately
+			// in night_min / sunday_holiday_min (KV allowances, e.g. night allowance), but never as overtime.
+			// Overtime 100 = the premium (night, Sunday, public holiday) part of the overtime minutes,
+			// ot100 = min(premium, overtime). The rest of the overtime is overtime 50.
 			$excess = max(0, $worked - $target);
-			$nonPremiumExcess = max(0, $excess - $ot100);
-			if ($modelType === 'flex' || $modelType === 'selfdetermined') {
-				// Flexitime (paragraph 4b AZG): minutes above target within the normal daily maximum are
-				// flex credit carried over the period, not overtime. Above the maximum -> overtime 50.
-				$aboveMax = max(0, $worked - max($target, $normalDailyMax));
-				$ot50 = min($nonPremiumExcess, $aboveMax);
-			} elseif ($isPartTime) {
-				// Part-time (paragraph 19d (3a) AZG): minutes above the agreed daily time up to the full-time
-				// daily normal hours of the KV are "Mehrarbeit" (25 percent surcharge), beyond that overtime 50.
+			// Sunday and public holidays are weekly / holiday rest (paragraph 3, 7 ARG): never part of a flexitime frame.
+			$isRestDay = ($isoWeekday === 7 || $isPublicHoliday);
+			if ($isPartTime) {
+				// Part-time (paragraph 19d (3a) AZG), checked first so that it also applies to part-timers on a
+				// flexitime model: minutes above the agreed daily time up to the full-time daily normal hours of
+				// the KV are "Mehrarbeit" (25 percent surcharge), beyond that overtime.
 				$kvDaily = (int) round($kvWeekly * 60 / 5);
-				$band = max(0, $kvDaily - $target);
-				$extraPartTime = min($nonPremiumExcess, $band);
-				$ot50 = $nonPremiumExcess - $extraPartTime;
+				$overtime = max(0, $worked - max($target, $kvDaily));
+				$ot100 = min($premium, $overtime);
+				$ot50 = $overtime - $ot100;
+				$extraPartTime = $excess - $overtime;
+			} elseif (($modelType === 'flex' || $modelType === 'selfdetermined') && !$isRestDay) {
+				// Flexitime (paragraph 4b AZG): minutes above target within the normal daily maximum are
+				// flex credit carried over the period (diff_min), not overtime. Only minutes above
+				// max(target, normal daily maximum) are overtime.
+				$overtime = max(0, $worked - max($target, $normalDailyMax));
+				$ot100 = min($premium, $overtime);
+				$ot50 = $overtime - $ot100;
 			} else {
-				// Fixed working time full-time (paragraph 6 (1), 10 AZG): every minute above the target is overtime 50.
-				$ot50 = $nonPremiumExcess;
+				// Fixed working time full-time (paragraph 6 (1), 10 AZG): every minute above the target is overtime.
+				$ot100 = min($premium, $excess);
+				$ot50 = $excess - $ot100;
 			}
 		}
 

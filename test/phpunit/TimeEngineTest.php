@@ -164,10 +164,69 @@ class TimeEngineTest extends TestCase
 	public function testNightWorkAcrossMidnight(): void
 	{
 		$r = $this->compute(array('day' => '2026-03-03', 'entries' => $this->entries('2026-03-03', array(array('in', '2026-03-03 20:00:00'), array('out', '2026-03-04 02:00:00')))));
+		// 20:00-02:00 on a 480 min target day: 360 min worked, all within the target, so no overtime.
+		// The 240 night minutes are reported (KV night allowance) but carry no overtime surcharge
+		// (paragraph 10 AZG: the surcharge applies to overtime only).
 		$this->assertSame(360, $r['worked_min']);
 		$this->assertSame(240, $r['night_min']);
-		$this->assertSame(240, $r['overtime100_min']);
+		$this->assertSame(0, $r['overtime100_min']);
+		$this->assertSame(0, $r['overtime50_min']);
+		$this->assertSame(-120, $r['diff_min']);
 		$this->assertSame(0, $r['break_auto_added_min']);
+	}
+
+	public function testPremiumWithinTargetGivesNoOt100(): void
+	{
+		// 444 min target, 20:00-03:54 with 30 min break = 444 min worked, 324 of them night minutes.
+		$r = $this->compute(array('day' => '2026-03-03', 'model' => $this->model('fixed', 444), 'kv' => $this->kv(37), 'contract' => array('weekly_hours' => 37), 'entries' => $this->entries('2026-03-03', array(array('in', '2026-03-03 20:00:00'), array('break_start', '2026-03-03 23:00:00'), array('break_end', '2026-03-03 23:30:00'), array('out', '2026-03-04 03:54:00')))));
+		$this->assertSame(444, $r['worked_min']);
+		$this->assertSame(0, $r['diff_min']);
+		$this->assertSame(324, $r['night_min']);
+		$this->assertSame(0, $r['overtime100_min']);
+		$this->assertSame(0, $r['overtime50_min']);
+	}
+
+	public function testFixedNightOvertimeIsOt100(): void
+	{
+		// 444 min target, 14:00-23:00 with 30 min break = 510 min worked, 66 min overtime, 60 night minutes.
+		$r = $this->compute(array('model' => $this->model('fixed', 444), 'kv' => $this->kv(37), 'contract' => array('weekly_hours' => 37), 'entries' => $this->entries('2026-03-02', array(array('in', '14:00'), array('break_start', '18:00'), array('break_end', '18:30'), array('out', '23:00')))));
+		$this->assertSame(510, $r['worked_min']);
+		$this->assertSame(60, $r['night_min']);
+		$this->assertSame(60, $r['overtime100_min']);
+		$this->assertSame(6, $r['overtime50_min']);
+	}
+
+	public function testFlexNineHoursWithNightMinutes(): void
+	{
+		// Flex 444 target, 13:00-22:30 with 30 min break = 540 min worked, 30 night minutes:
+		// 96 min flex credit within the 10h normal maximum, no overtime, no surcharge.
+		$r = $this->compute(array('model' => $this->model('flex', 444), 'kv' => $this->kv(37), 'contract' => array('weekly_hours' => 37), 'entries' => $this->entries('2026-03-02', array(array('in', '13:00'), array('break_start', '17:00'), array('break_end', '17:30'), array('out', '22:30')))));
+		$this->assertSame(540, $r['worked_min']);
+		$this->assertSame(30, $r['night_min']);
+		$this->assertSame(96, $r['diff_min']);
+		$this->assertSame(0, $r['overtime100_min']);
+		$this->assertSame(0, $r['overtime50_min']);
+	}
+
+	public function testSundayFourHoursOnZeroTarget(): void
+	{
+		$r = $this->compute(array('day' => '2026-03-08', 'entries' => $this->entries('2026-03-08', array(array('in', '08:00'), array('out', '12:00')))));
+		$this->assertSame(0, $r['target_min']);
+		$this->assertSame(240, $r['sunday_holiday_min']);
+		$this->assertSame(240, $r['overtime100_min']);
+		$this->assertSame(0, $r['overtime50_min']);
+		// Same on a flexitime model: Sunday is outside any flexitime frame (paragraph 3 ARG).
+		$r = $this->compute(array('day' => '2026-03-08', 'model' => $this->model('flex', 444), 'entries' => $this->entries('2026-03-08', array(array('in', '08:00'), array('out', '12:00')))));
+		$this->assertSame(240, $r['overtime100_min']);
+	}
+
+	public function testPartTimeFlexGetsExtraParttime(): void
+	{
+		$r = $this->compute(array('model' => $this->model('flex', 240), 'kv' => $this->kv(37), 'contract' => array('weekly_hours' => 20), 'entries' => $this->entries('2026-03-02', array(array('in', '08:00'), array('out', '14:00')))));
+		$this->assertSame(1, $r['part_time']);
+		$this->assertSame(120, $r['extra_parttime_min']);
+		$this->assertSame(0, $r['overtime50_min']);
+		$this->assertSame(0, $r['overtime100_min']);
 	}
 
 	public function testSundayWork(): void

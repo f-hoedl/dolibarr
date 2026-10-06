@@ -27,15 +27,16 @@ INSERT INTO llx_anxhr_timemodel (entity, ref, label, model_type, weekly_hours, d
 INSERT INTO llx_anxhr_timemodel (entity, ref, label, model_type, weekly_hours, daily_minutes_json, flex_start, flex_end, core_start, core_end, flex_period_months, max_carry_plus_min, max_carry_minus_min, break_rule, normal_daily_max_min, kv_code, status, date_creation) VALUES (__ENTITY__, 'FIX40', 'Fixe Arbeitszeit 40h Mo-Fr', 'fixed', 40, '{"1":480,"2":480,"3":480,"4":480,"5":480,"6":0,"7":0}', NULL, NULL, NULL, NULL, 1, NULL, NULL, 'auto', 600, 'AZG', 1, NOW());
 
 -- Travel rates Austria (paragraph 26 Z 4 EStG, Kilometergeldverordnung, BBG 2025)
+-- The 30000 km annual cap of km_car and km_motorbike is ONE combined cap (callers pass combined km_year_so_far).
 INSERT INTO llx_anxhr_travel_rate (entity, code, label, valid_from, amount, cap_per_year, date_creation) VALUES (__ENTITY__, 'taggeld_in', 'Taggeld Inland', '1900-01-01', 26.40, NULL, NOW());
 INSERT INTO llx_anxhr_travel_rate (entity, code, label, valid_from, amount, cap_per_year, date_creation) VALUES (__ENTITY__, 'taggeld_in', 'Taggeld Inland', '2025-01-01', 30.00, NULL, NOW());
 INSERT INTO llx_anxhr_travel_rate (entity, code, label, valid_from, amount, cap_per_year, date_creation) VALUES (__ENTITY__, 'naechtigung_in', 'Naechtigungsgeld Inland', '1900-01-01', 15.00, NULL, NOW());
 INSERT INTO llx_anxhr_travel_rate (entity, code, label, valid_from, amount, cap_per_year, date_creation) VALUES (__ENTITY__, 'naechtigung_in', 'Naechtigungsgeld Inland', '2025-01-01', 17.00, NULL, NOW());
 INSERT INTO llx_anxhr_travel_rate (entity, code, label, valid_from, amount, cap_per_year, date_creation) VALUES (__ENTITY__, 'km_car', 'Kilometergeld PKW', '1900-01-01', 0.42, 30000, NOW());
 INSERT INTO llx_anxhr_travel_rate (entity, code, label, valid_from, amount, cap_per_year, date_creation) VALUES (__ENTITY__, 'km_car', 'Kilometergeld PKW', '2025-01-01', 0.50, 30000, NOW());
-INSERT INTO llx_anxhr_travel_rate (entity, code, label, valid_from, amount, cap_per_year, date_creation) VALUES (__ENTITY__, 'km_motorbike', 'Kilometergeld Motorrad', '1900-01-01', 0.24, NULL, NOW());
-INSERT INTO llx_anxhr_travel_rate (entity, code, label, valid_from, amount, cap_per_year, date_creation) VALUES (__ENTITY__, 'km_motorbike', 'Kilometergeld Motorrad', '2025-01-01', 0.50, NULL, NOW());
-INSERT INTO llx_anxhr_travel_rate (entity, code, label, valid_from, amount, cap_per_year, date_creation) VALUES (__ENTITY__, 'km_motorbike', 'Kilometergeld Motorrad', '2025-07-01', 0.25, NULL, NOW());
+INSERT INTO llx_anxhr_travel_rate (entity, code, label, valid_from, amount, cap_per_year, date_creation) VALUES (__ENTITY__, 'km_motorbike', 'Kilometergeld Motorrad', '1900-01-01', 0.24, 30000, NOW());
+INSERT INTO llx_anxhr_travel_rate (entity, code, label, valid_from, amount, cap_per_year, date_creation) VALUES (__ENTITY__, 'km_motorbike', 'Kilometergeld Motorrad', '2025-01-01', 0.50, 30000, NOW());
+INSERT INTO llx_anxhr_travel_rate (entity, code, label, valid_from, amount, cap_per_year, date_creation) VALUES (__ENTITY__, 'km_motorbike', 'Kilometergeld Motorrad', '2025-07-01', 0.25, 30000, NOW());
 INSERT INTO llx_anxhr_travel_rate (entity, code, label, valid_from, amount, cap_per_year, date_creation) VALUES (__ENTITY__, 'km_bike', 'Kilometergeld Fahrrad', '1900-01-01', 0.38, 2500, NOW());
 INSERT INTO llx_anxhr_travel_rate (entity, code, label, valid_from, amount, cap_per_year, date_creation) VALUES (__ENTITY__, 'km_bike', 'Kilometergeld Fahrrad', '2025-01-01', 0.50, 3000, NOW());
 INSERT INTO llx_anxhr_travel_rate (entity, code, label, valid_from, amount, cap_per_year, date_creation) VALUES (__ENTITY__, 'km_bike', 'Kilometergeld Fahrrad', '2025-07-01', 0.25, 3000, NOW());

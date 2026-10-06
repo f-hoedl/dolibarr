@@ -207,10 +207,13 @@ class TimeDay extends CommonObject
 			$this->error = $entryObj->error;
 			return -1;
 		}
-		$contract = $this->getContractData($userid, $tsday, $day);
+		// DATE columns (contract, leave) are written and read by core in the server zone: query them with the
+		// server zone midnight of the day, not with the company zone timestamp.
+		$tsdayServer = (int) dol_mktime(0, 0, 0, (int) substr($day, 5, 2), (int) substr($day, 8, 2), (int) substr($day, 0, 4), 'tzserver');
+		$contract = $this->getContractData($userid, $tsdayServer, $day);
 		$model = $this->getModelArray($contract);
 		$kv = $this->getKvArray($contract, $model, $day);
-		$absence = $this->getAbsence($userid, $tsday, $day);
+		$absence = $this->getAbsence($userid, $tsdayServer, $day);
 
 		$engineEntries = array();
 		foreach ($ctx['entries'] as $e) {
@@ -246,7 +249,7 @@ class TimeDay extends CommonObject
 		}
 		$last = empty($input['entries']) ? null : end($input['entries']);
 		if ($last !== null && $last['type'] !== 'out') {
-			$input['entries'][] = array('type' => 'out', 'time' => dol_print_date($nowts, '%Y-%m-%d %H:%M:%S', 'tzserver'), 'homeoffice' => 0);
+			$input['entries'][] = array('type' => 'out', 'time' => anxhrTsToTz($nowts, 'Y-m-d H:i:s'), 'homeoffice' => 0);
 		}
 		$engine = new TimeEngine();
 		return $engine->computeDay($input);
@@ -308,7 +311,7 @@ class TimeDay extends CommonObject
 		$userids = array();
 		$sql = "SELECT DISTINCT fk_user FROM ".$db->prefix()."anxhr_time_entry";
 		$sql .= " WHERE entity IN (".getEntity('anxhr_time_entry').")";
-		$sql .= " AND entry_datetime >= '".$db->idate($ts - 86400)."' AND entry_datetime < '".$db->idate($ts + 2 * 86400)."'";
+		$sql .= " AND entry_datetime >= '".$db->idate($ts - 86400)."' AND entry_datetime < '".$db->idate($ts + 2 * 86400 + 3600)."'";
 		$resql = $db->query($sql);
 		if (!$resql) {
 			dol_syslog(__METHOD__.' '.$db->lasterror(), LOG_ERR);
@@ -589,7 +592,7 @@ class TimeDay extends CommonObject
 	/**
 	 * Check if a day is a public holiday of the company country (dictionary c_hrm_public_holiday).
 	 *
-	 * @param	int		$tsday	Timestamp of day (server tz midnight)
+	 * @param	int		$tsday	Timestamp of day (company zone midnight)
 	 * @return	bool
 	 */
 	protected function isPublicHoliday($tsday)
@@ -606,7 +609,7 @@ class TimeDay extends CommonObject
 
 	/**
 	 * Return absence of a user on a day from approved leave requests (core holiday module).
-	 * Mapping of leave type code: contains 'ZA' (or label Zeitausgleich) -> za, 'SICK'/'KRANK' -> sick, else vacation.
+	 * Leave type mapping: see mapLeaveType().
 	 *
 	 * @param	int		$userid		User id
 	 * @param	int		$tsday		Timestamp of day
@@ -651,21 +654,31 @@ class TimeDay extends CommonObject
 	}
 
 	/**
-	 * Map a core leave type to an engine absence code.
+	 * Map a core leave type to an engine absence code. Shared helper (used by getAbsence() and the triggers).
+	 * Only known types are mapped (code or label, case insensitive):
+	 * - 'za' when the code is ZA (as a word) or the label contains Zeitausgleich: the target stays, the balance is consumed,
+	 * - 'sick' when code or label contains SICK / KRANK,
+	 * - 'vacation' when code or label contains VACATION / URLAUB / HOLIDAY (e.g. core LEAVE_PAID "Paid vacation").
+	 * Every other type returns 'other': it does NOT fulfil the daily target (unpaid or unknown leave must be
+	 * mapped explicitly by naming the type accordingly).
 	 *
 	 * @param	string	$code	Leave type code
 	 * @param	string	$label	Leave type label
-	 * @return	string
+	 * @return	string			za|sick|vacation|other
 	 */
 	public static function mapLeaveType($code, $label = '')
 	{
 		$code = strtoupper((string) $code);
-		if (strpos($code, 'ZA') !== false || stripos((string) $label, 'Zeitausgleich') !== false) {
+		$text = $code.' '.strtoupper((string) $label);
+		if (preg_match('/(^|[^A-Z])ZA([^A-Z]|$)/', $code) || strpos($text, 'ZEITAUSGLEICH') !== false) {
 			return 'za';
 		}
-		if (strpos($code, 'SICK') !== false || strpos($code, 'KRANK') !== false) {
+		if (strpos($text, 'SICK') !== false || strpos($text, 'KRANK') !== false) {
 			return 'sick';
 		}
-		return 'vacation';
+		if (strpos($text, 'VACATION') !== false || strpos($text, 'URLAUB') !== false || strpos($text, 'HOLIDAY') !== false) {
+			return 'vacation';
+		}
+		return 'other';
 	}
 }

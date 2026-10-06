@@ -71,8 +71,9 @@ $isapprover = $user->hasRight('anxhr', 'time', 'approve');
 // Day and employee of the create form
 $day = GETPOST('day', 'alpha');
 if (GETPOSTISSET('reday')) {
-	$tsre = GETPOSTDATE('re', '00:00:00', 'tzserver');
-	$day = $tsre ? TimeEntry::timestampToDay($tsre) : '';
+	// Pure date: read as GMT midnight so no time zone can shift the day.
+	$tsre = GETPOSTDATE('re', '00:00:00', 'gmt');
+	$day = $tsre ? gmdate('Y-m-d', (int) $tsre) : '';
 }
 if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $day) || $day > $today) {
 	$day = $today;
@@ -136,7 +137,7 @@ if ($action == 'add' && $cancreatefor && $_SERVER['REQUEST_METHOD'] === 'POST') 
 	}
 	if (!$error) {
 		$object->fk_user = $userid;
-		$object->day = TimeEntry::dayToTimestamp($day);
+		$object->day = anxhrDayToServerTs($day);
 		$object->new_json = json_encode($rows);
 		$object->reason = $reason;
 		$res = $object->create($user);
@@ -147,6 +148,16 @@ if ($action == 'add' && $cancreatefor && $_SERVER['REQUEST_METHOD'] === 'POST') 
 				$object->fetch($res);
 				if ($object->approve($user, $langs->transnoentitiesnoconv('AnxhrAutoApprovedByHr')) > 0) {
 					setEventMessages($langs->trans('AnxhrCorrectionApplied'), null, 'mesgs');
+				} else {
+					setEventMessages($langs->trans($object->error), $object->errors, 'errors');
+				}
+			} elseif ($userid == $user->id && $day === $today && getDolGlobalInt('ANXHR_CLOCK_ALLOW_SELF_CORRECTION_SAME_DAY')) {
+				// Own correction of the current day: applied without approval when allowed by setup.
+				$object->fetch($res);
+				if ($object->approve($user, $langs->transnoentitiesnoconv('AnxhrAutoAppliedSameDay'), 1) > 0) {
+					setEventMessages($langs->trans('AnxhrCorrectionApplied'), null, 'mesgs');
+				} else {
+					setEventMessages($langs->trans($object->error), $object->errors, 'errors');
 				}
 			}
 			header('Location: '.$_SERVER['PHP_SELF']);
@@ -198,7 +209,7 @@ if ($action == 'create' && $cancreatefor) {
 		print '<tr><td class="titlefield">'.$langs->trans('Employee').'</td><td>'.$emp->getNomUrl(-1).'</td></tr>';
 	}
 	print '<tr><td class="titlefield fieldrequired">'.$langs->trans('Date').'</td><td>';
-	print $form->selectDate(TimeEntry::dayToTimestamp($day), 're', 0, 0, 0, '', 1, 0, 0, '', '', '', '', 1, '', '', 'tzserver');
+	print $form->selectDate(anxhrDayToGmt($day), 're', 0, 0, 0, '', 1, 0, 0, '', '', '', '', 1, '', '', 'gmt');
 	print ' <input type="submit" class="button smallpaddingimp" value="'.dol_escape_htmltag($langs->trans('AnxhrLoadDay')).'">';
 	print '</td></tr>';
 	print '</table>';
@@ -230,7 +241,7 @@ if ($action == 'create' && $cancreatefor) {
 	for ($i = 0; $i < $nbrows; $i++) {
 		$c = isset($current[$i]) ? $current[$i] : null;
 		$selType = $c ? $c['type'] : '';
-		$selTime = $c ? dol_print_date($c['ts'], '%H:%M', 'tzserver') : '';
+		$selTime = $c ? anxhrTsToTz($c['ts'], 'H:i') : '';
 		$isNext = ($c && TimeEntry::timestampToDay($c['ts']) !== $day);
 		// Each input gets an accessible name (row number + column), as the visible label is only the column header
 		$rowlabel = $langs->transnoentitiesnoconv('AnxhrEntryTypeNth', $i + 1);

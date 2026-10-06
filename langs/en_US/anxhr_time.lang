@@ -68,8 +68,6 @@ AnxhrCorrection = Correction
 #
 # Day values
 #
-AnxhrTarget = Target
-AnxhrWorked = Worked
 AnxhrBreak = Break
 AnxhrDiff = Difference
 AnxhrOvertime50 = Overtime 50%%
@@ -85,6 +83,7 @@ AnxhrAbsenceSick = Sick leave
 AnxhrAbsenceZa = Time off in lieu
 AnxhrAbsenceHoliday = Leave
 AnxhrAbsenceSpecial = Special leave
+AnxhrAbsenceOther = Other leave
 AnxhrOpenEntry = Open entry
 AnxhrLocked = Locked (month closed)
 AnxhrComputedAt = Computed at
@@ -132,8 +131,10 @@ AnxhrCorrectionRefused = Refused
 AnxhrCorrectionCreated = Correction requested
 AnxhrCorrectionApplied = Correction applied
 AnxhrAutoApprovedByHr = Entered by HR
+AnxhrAutoAppliedSameDay = Own correction of the current day, applied without approval (setup)
 AnxhrErrorNoEntries = Please enter at least one entry (type and time).
 AnxhrErrorDayLocked = This day belongs to a closed month and cannot be changed. HR must reopen the month first.
+AnxhrErrorDayChangedSinceRequest = The entries of this day were changed after the correction request. Refuse this request and create a new one.
 AnxhrErrorCorrectionAlreadyApproved = An approved correction cannot be deleted.
 
 #
@@ -152,6 +153,8 @@ AnxhrReopen = Reopen
 AnxhrCreatePeriodsForMonth = Create monthly closings
 AnxhrPeriodsCreated = %s monthly closing(s) created or updated
 AnxhrExportCsv = Export CSV (payroll)
+AnxhrExportSkippedUnapproved = %s period(s) of this month are not approved yet and are not part of the payroll export.
+AnxhrWeekTotal = Week %s
 AnxhrBalanceStart = Balance start
 AnxhrBalanceEnd = Balance end
 AnxhrOvertimePaid = Overtime paid out
@@ -185,7 +188,6 @@ AnxhrModelTypeFixed = Fixed working time
 AnxhrModelTypeFlex = Flexitime
 AnxhrModelTypeSelfdetermined = Self-determined working time
 AnxhrModelTypeHelp = Fixed: hours above target are overtime. Flexitime (paragraph 4b AZG): hours above target are flex credit up to the daily normal maximum. Self-determined: like flexitime, recording of duration is sufficient (paragraph 26 (3) AZG).
-AnxhrWeeklyHours = Weekly hours
 AnxhrWeeklyHoursModelHelp = Leave empty to use the sum of the daily targets.
 AnxhrDailyMinutes = Daily target (hh:mm)
 AnxhrDailyMinutesHelp = Target per weekday as hh:mm. For employees whose contract hours differ from the model hours, targets are scaled proportionally.
@@ -205,7 +207,6 @@ AnxhrBreakRuleRequired = Break booking required
 AnxhrBreakRuleHelp = More than 6 hours of work require a break of 30 minutes (paragraph 11 AZG). Automatic: missing minutes are deducted and noted. Check / required: a violation is shown.
 AnxhrNormalDailyMax = Daily normal maximum
 AnxhrNormalDailyMaxHelp = Usually 10:00 (paragraph 9 AZG, paragraph 4b AZG). Hours above are overtime and are flagged.
-AnxhrKvCode = Collective agreement code
 AnxhrNewKvRate = New KV parameter set
 AnxhrEditKvRate = Edit KV parameter set
 AnxhrValidFrom = Valid from

@@ -114,6 +114,16 @@ if (!is_array($days)) {
 	$days = array();
 	setEventMessages($tday->error, null, 'errors');
 }
+// Days of the complete ISO weeks around the month (one query) for the weekly summary (paragraph 9 AZG: 60h per week).
+$gmFirst = anxhrDayToGmt($first);
+$gmLast = anxhrDayToGmt($last);
+$weekFirst = gmdate('Y-m-d', $gmFirst - ((int) gmdate('N', $gmFirst) - 1) * 86400);
+$weekLast = gmdate('Y-m-d', $gmLast + (7 - (int) gmdate('N', $gmLast)) * 86400);
+$weekDays = $tday->fetchDays($id, $weekFirst, $weekLast);
+if (!is_array($weekDays)) {
+	$weekDays = array();
+}
+$engine = new TimeEngine();
 $entryObj = new TimeEntry($db);
 $entries = $entryObj->fetchRangeGroupedByDay($id, $first, $last);
 if (!is_array($entries)) {
@@ -168,7 +178,6 @@ $cancorrect = (($id == $user->id && $user->hasRight('anxhr', 'time', 'correct_ow
 $nbdays = (int) gmdate('t', gmmktime(0, 0, 0, $month, 1, $year));
 for ($d = 1; $d <= $nbdays; $d++) {
 	$day = sprintf('%04d-%02d-%02d', $year, $month, $d);
-	$ts = TimeEntry::dayToTimestamp($day);
 	$row = isset($days[$day]) ? $days[$day] : null;
 	$isoday = (int) gmdate('N', gmmktime(0, 0, 0, $month, $d, $year));
 	$css = 'oddeven';
@@ -176,7 +185,7 @@ for ($d = 1; $d <= $nbdays; $d++) {
 	$css .= ($day === $today ? ' anxhr-today' : '');
 	$css .= (($row && !empty($row['holiday_flag'])) ? ' anxhr-holiday' : '');
 	print '<tr class="'.$css.'">';
-	print '<td class="nowraponall anxhr-daycell">'.dol_print_date($ts, 'daytextshort', 'tzserver');
+	print '<td class="nowraponall anxhr-daycell">'.dol_print_date(gmmktime(0, 0, 0, $month, $d, $year), 'daytextshort', 'gmt');
 	if ($row && !empty($row['holiday_flag'])) {
 		print ' '.img_picto($langs->trans('AnxhrPublicHoliday'), 'fa-star', 'class="opacitymedium"');
 	}
@@ -207,6 +216,32 @@ for ($d = 1; $d <= $nbdays; $d++) {
 	}
 	print '</td>';
 	print '</tr>';
+
+	// Week summary row after each Sunday and at the end of the month (complete ISO week, also days of the neighbour month).
+	if ($isoday == 7 || $d == $nbdays) {
+		$gmday = gmmktime(0, 0, 0, $month, $d, $year);
+		$monday = $gmday - ($isoday - 1) * 86400;
+		$weekRows = array();
+		for ($w = 0; $w < 7; $w++) {
+			$wd = gmdate('Y-m-d', $monday + $w * 86400);
+			if (isset($weekDays[$wd])) {
+				$weekRows[] = $weekDays[$wd];
+			}
+		}
+		$week = $engine->computeWeek($weekRows);
+		print '<tr class="liste_total anxhr-weekrow">';
+		print '<td class="nowraponall">'.$langs->trans('AnxhrWeekTotal', gmdate('W', $monday)).'</td><td class="hideonsmartphone"></td>';
+		print '<td class="right">'.anxhrTimeFormatMinutes($week['worked_min']).'</td>';
+		print '<td class="right hideonsmartphone">'.anxhrTimeFormatMinutes($week['break_min']).'</td>';
+		print '<td class="right">'.anxhrTimeFormatMinutes($week['target_min']).'</td>';
+		print '<td class="right">'.anxhrTimeBalanceHtml($week['diff_min']).'</td>';
+		print '<td class="right hideonsmartphone">'.($week['overtime50_min'] ? anxhrTimeFormatMinutes($week['overtime50_min']) : '').'</td>';
+		print '<td class="right hideonsmartphone">'.($week['overtime100_min'] ? anxhrTimeFormatMinutes($week['overtime100_min']) : '').'</td>';
+		print '<td></td>';
+		print '<td class="center">'.anxhrViolationBadges($week['violations'], $langs).'</td>';
+		print '<td></td>';
+		print '</tr>';
+	}
 }
 
 // Totals

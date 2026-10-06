@@ -37,6 +37,7 @@ CREATE TABLE llx_anxhr_time_period(
 	date_confirm DATETIME,
 	fk_user_approve INTEGER,
 	date_approve DATETIME,
+	violations_json TEXT,
 	note TEXT,
 	date_creation DATETIME NOT NULL,
 	tms TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

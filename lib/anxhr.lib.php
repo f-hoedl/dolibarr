@@ -81,7 +81,9 @@ function anxhrUserTabPrepareHead($object)
 
 /**
  * Check if a viewer can see the HR data of a user.
- * True if viewer has employee read_all, or is the user himself (with read_own), or is a (direct or indirect) supervisor.
+ * True if viewer has employee read_all, or is the user himself (with employee read_own), or is a (direct or
+ * indirect) supervisor of the user WITH the time approve right (supervisors without any right see nothing).
+ * Sensitive blocks (emergency contacts) have their own stricter checks in the pages.
  *
  * @param	User	$viewer		User who wants to see data
  * @param	int		$userid		Id of employee
@@ -99,8 +101,11 @@ function anxhrCanSeeUser($viewer, $userid)
 	if ($viewer->id == $userid) {
 		return (bool) $viewer->hasRight('anxhr', 'employee', 'read_own');
 	}
+	if (!$viewer->hasRight('anxhr', 'time', 'approve')) {
+		return false;
+	}
 
-	return in_array($userid, anxhrGetSubordinateIds($viewer));
+	return in_array($userid, anxhrGetSubordinateIds($viewer), true);
 }
 
 /**

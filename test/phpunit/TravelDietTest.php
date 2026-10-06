@@ -71,21 +71,59 @@ class TravelDietTest extends TestCase
 
 	public function testTwoDayTripWithNight(): void
 	{
+		// Default 24 hour method: Mon 08:00 - Tue 08:00 = 12/12, Tue 08:00 - 18:00 = 10/12.
 		$r = $this->diet()->computeTrip(array('start' => '2026-03-02 08:00', 'end' => '2026-03-03 18:00', 'country' => 'AT'));
 		$this->assertCount(2, $r['days']);
 		$this->assertSame(12, $r['days'][0]['twelfths']);
-		$this->assertSame(12, $r['days'][1]['twelfths']);
+		$this->assertSame(10, $r['days'][1]['twelfths']);
 		$this->assertSame(1, $r['nights']);
 		$this->assertEqualsWithDelta(17.00, $r['totals']['nacht_amount'], 0.001);
+		$this->assertEqualsWithDelta(30.00 + 25.00 + 17.00, $r['totals']['total'], 0.001);
+	}
+
+	public function testTwoDayTripWithNightCalendarMethod(): void
+	{
+		$r = $this->diet()->computeTrip(array('start' => '2026-03-02 08:00', 'end' => '2026-03-03 18:00', 'country' => 'AT', 'method' => 'calendar'));
+		$this->assertCount(2, $r['days']);
+		$this->assertSame(12, $r['days'][0]['twelfths']);
+		$this->assertSame(12, $r['days'][1]['twelfths']);
 		$this->assertEqualsWithDelta(77.00, $r['totals']['total'], 0.001);
 	}
 
 	public function testTwoDayTripPartialSecondDay(): void
 	{
+		// 24 hour method: 20.5 hours are one period -> 12/12, plus one night (calendar day crossed).
 		$r = $this->diet()->computeTrip(array('start' => '2026-03-02 14:00', 'end' => '2026-03-03 10:30'));
+		$this->assertCount(1, $r['days']);
+		$this->assertSame(12, $r['days'][0]['twelfths']);
+		$this->assertSame(1, $r['nights']);
+		$this->assertEqualsWithDelta(30.00 + 17.00, $r['totals']['total'], 0.001);
+		// Calendar method: 10/12 + 11/12.
+		$r = $this->diet()->computeTrip(array('start' => '2026-03-02 14:00', 'end' => '2026-03-03 10:30', 'method' => 'calendar'));
 		$this->assertSame(10, $r['days'][0]['twelfths']);
 		$this->assertSame(11, $r['days'][1]['twelfths']);
 		$this->assertEqualsWithDelta(25.00 + 27.50 + 17.00, $r['totals']['total'], 0.001);
+	}
+
+	public function testNightTripThresholdAppliesToWholeTrip(): void
+	{
+		// 22:00 - 04:00: 6 hours trip, more than 3 hours as a whole -> 6 twelfths with both methods.
+		$r = $this->diet()->computeTrip(array('start' => '2026-03-02 22:00', 'end' => '2026-03-03 04:00', 'nights' => 0));
+		$this->assertSame(6, $r['totals']['twelfths']);
+		$this->assertEqualsWithDelta(15.00, $r['totals']['total'], 0.001);
+		$r = $this->diet()->computeTrip(array('start' => '2026-03-02 22:00', 'end' => '2026-03-03 04:00', 'nights' => 0, 'method' => 'calendar'));
+		$this->assertSame(2, $r['days'][0]['twelfths']);
+		$this->assertSame(4, $r['days'][1]['twelfths']);
+		$this->assertSame(6, $r['totals']['twelfths']);
+	}
+
+	public function testKmMotorbikeSharesCarCap(): void
+	{
+		// The 30000 km cap is combined car + motorbike: callers pass the combined km of the year.
+		$r = $this->diet()->computeKm(array('date' => '2026-03-02', 'vehicle' => 'motorbike', 'km' => 100, 'km_year_so_far' => 29960));
+		$this->assertEqualsWithDelta(40.0, $r['km_capped'], 0.001);
+		$this->assertEqualsWithDelta(10.00, $r['amount_capped'], 0.001);
+		$this->assertEqualsWithDelta(15.00, $r['taxable_excess'], 0.001);
 	}
 
 	public function testTripDecember2024UsesOldRate(): void

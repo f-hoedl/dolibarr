@@ -36,4 +36,4 @@ INSERT INTO llx_c_anxhr_handover_cat (entity, code, label, active) VALUES (__ENT
 INSERT INTO llx_c_action_trigger (code, label, description, elementtype, rang) VALUES ('ANXHR_DEADLINE_REMIND', 'HR deadline reminder', 'Executed when an HR deadline reminder is due', 'anxhr', 500100);
 INSERT INTO llx_c_action_trigger (code, label, description, elementtype, rang) VALUES ('ANXHR_TIMEPERIOD_APPROVE', 'Monthly time period approved', 'Executed when a monthly time period is approved', 'anxhr', 500101);
 INSERT INTO llx_c_action_trigger (code, label, description, elementtype, rang) VALUES ('ANXHR_TIMECORRECTION_APPROVE', 'Time correction approved', 'Executed when a time correction request is approved', 'anxhr', 500102);
-INSERT INTO llx_c_action_trigger (code, label, description, elementtype, rang) VALUES ('ANXHR_CONTRACT_CREATE', 'Employment contract created', 'Executed when an employment contract is created', 'anxhr_contract@anxhr', 500103);
+INSERT INTO llx_c_action_trigger (code, label, description, elementtype, rang) VALUES ('ANXHR_CONTRACT_CREATE', 'Employment contract created', 'Executed when an employment contract is created', 'anxhr', 500103);

@@ -79,7 +79,22 @@ if ($action == 'clock' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 	$state = TimeEntry::getLastStateForUser($db, $user->id);
 	$allowed = TimeEntry::getNextActions($state);
 	$last = TimeEntry::getLastEntryForUser($db, $user->id);
-	if (!in_array($type, $allowed, true)) {
+	// Locked days (approved or exported periods) cannot receive new entries: today, and for a running shift its start day.
+	$tdaylock = new TimeDay($db);
+	$lockdays = array($today);
+	if ($state !== 'out' && !empty($last)) {
+		$lockdays[] = TimeEntry::timestampToDay($last['ts']);
+	}
+	$daylocked = false;
+	foreach (array_unique($lockdays) as $lockday) {
+		$lockrow = $tdaylock->fetchRowForUserDay($user->id, $lockday);
+		if (is_array($lockrow) && !empty($lockrow['locked'])) {
+			$daylocked = true;
+		}
+	}
+	if ($daylocked) {
+		setEventMessages($langs->trans('AnxhrErrorDayLocked'), null, 'errors');
+	} elseif (!in_array($type, $allowed, true)) {
 		setEventMessages($langs->trans('AnxhrErrorActionNotAllowed'), null, 'errors');
 	} elseif (!empty($last) && $last['type'] === $type && ($now - $last['ts']) < 60) {
 		// Double click protection: same action within one minute is ignored.
@@ -98,7 +113,7 @@ if ($action == 'clock' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 			// A shift belongs to the day of its clock in: recompute yesterday too (night shifts).
 			$tday->recomputeForUserDay($user, $user->id, $yesterday);
 			$tday->recomputeForUserDay($user, $user->id, $today);
-			setEventMessages($langs->trans('AnxhrClockRecorded', anxhrTimeEntryTypeLabel($type, $langs), dol_print_date($now, 'hour', 'tzserver')), null, 'mesgs');
+			setEventMessages($langs->trans('AnxhrClockRecorded', anxhrTimeEntryTypeLabel($type, $langs), anxhrPrintDateTz($now, 'hour')), null, 'mesgs');
 		} else {
 			setEventMessages($entry->error, $entry->errors, 'errors');
 		}
@@ -176,7 +191,7 @@ if ($ydays && !empty($ydays['open_entry']) && $shiftDay !== $yesterday) {
 	if ($user->hasRight('anxhr', 'time', 'correct_own')) {
 		$link = ' <a href="'.dol_buildpath('/anxhr/time_corrections.php', 1).'?action=create&day='.urlencode($yesterday).'">'.$langs->trans('AnxhrRequestCorrection').'</a>';
 	}
-	print '<div class="warning">'.img_warning().' '.$langs->trans('AnxhrYesterdayOpenEntry', dol_print_date(TimeEntry::dayToTimestamp($yesterday), 'day', 'tzserver')).$link.'</div>';
+	print '<div class="warning">'.img_warning().' '.$langs->trans('AnxhrYesterdayOpenEntry', anxhrPrintDateTz(TimeEntry::dayToTimestamp($yesterday), 'day')).$link.'</div>';
 }
 
 // Panel: state on the left, the action buttons on the right (stacked on phones)
@@ -190,11 +205,11 @@ print '<span class="anxhr-clock-statelabel">'.$langs->trans('AnxhrCurrentState')
 print '<span class="anxhr-clock-statebadge" role="status">'.anxhrTimeStateBadge($state, $langs).'</span>';
 print '</div>';
 print '<div class="anxhr-clock-timeline">';
-print '<span class="anxhr-now" id="anxhr-now" aria-live="polite">'.dol_print_date($now, '%H:%M', 'tzserver').'</span>';
-print '<span class="opacitymedium">'.dol_print_date($now, 'daytext', 'tzserver').'</span>';
+print '<span class="anxhr-now" id="anxhr-now" aria-live="polite">'.anxhrPrintDateTz($now, '%H:%M').'</span>';
+print '<span class="opacitymedium">'.anxhrPrintDateTz($now, 'daytext').'</span>';
 print '</div>';
 if ($lastEntry && $state !== 'out') {
-	print '<div class="opacitymedium">'.img_picto('', 'fa-history', 'class="pictofixedwidth"').$langs->trans('AnxhrSince', anxhrTimeEntryTypeLabel($lastEntry['type'], $langs), dol_print_date($lastEntry['ts'], 'hour', 'tzserver')).'</div>';
+	print '<div class="opacitymedium">'.img_picto('', 'fa-history', 'class="pictofixedwidth"').$langs->trans('AnxhrSince', anxhrTimeEntryTypeLabel($lastEntry['type'], $langs), anxhrPrintDateTz($lastEntry['ts'], 'hour')).'</div>';
 }
 print '</div>';
 
@@ -237,12 +252,12 @@ print '</div>';
 print '<a class="anxhr-clock-kpi" href="'.dol_buildpath('/anxhr/time_day.php', 1).'">';
 print '<span class="anxhr-clock-kpi-label">'.img_picto('', 'fa-balance-scale', 'class="pictofixedwidth"').$langs->trans('AnxhrBalanceMonth').'</span>';
 print '<span class="anxhr-clock-kpi-value">'.anxhrTimeBalanceHtml($balance).'</span>';
-print '<span class="anxhr-clock-kpi-sub">'.dol_escape_htmltag(dol_print_date($now, '%B %Y', 'tzserver')).'</span>';
+print '<span class="anxhr-clock-kpi-sub">'.dol_escape_htmltag(anxhrPrintDateTz($now, '%B %Y')).'</span>';
 print '</a>';
 print '</div>';
 
 // Today's entries (compact)
-print load_fiche_titre($langs->trans('AnxhrEntriesOfDay', dol_print_date(TimeEntry::dayToTimestamp($shiftDay), 'day', 'tzserver')), '', 'fa-list');
+print load_fiche_titre($langs->trans('AnxhrEntriesOfDay', anxhrPrintDateTz(TimeEntry::dayToTimestamp($shiftDay), 'day')), '', 'fa-list');
 print '<div class="div-table-responsive-no-min">';
 print '<table class="noborder centpercent anxhr-entries-today">';
 print '<tr class="liste_titre"><th class="width100">'.$langs->trans('AnxhrEntryTime').'</th><th>'.$langs->trans('AnxhrEntryType').'</th><th class="center">'.$langs->trans('AnxhrHomeoffice').'</th><th class="hideonsmartphone">'.$langs->trans('AnxhrSource').'</th></tr>';
@@ -252,7 +267,7 @@ if (empty($todayEntries)) {
 $typepictos = array('in' => 'fa-sign-in-alt', 'out' => 'fa-sign-out-alt', 'break_start' => 'fa-coffee', 'break_end' => 'fa-play');
 foreach ($todayEntries as $e) {
 	print '<tr class="oddeven">';
-	print '<td class="nowraponall">'.dol_print_date($e['ts'], ($shiftDay === TimeEntry::timestampToDay($e['ts']) ? 'hour' : 'dayhour'), 'tzserver').'</td>';
+	print '<td class="nowraponall">'.anxhrPrintDateTz($e['ts'], ($shiftDay === TimeEntry::timestampToDay($e['ts']) ? 'hour' : 'dayhour')).'</td>';
 	print '<td class="tdoverflowmax150">'.(isset($typepictos[$e['type']]) ? img_picto('', $typepictos[$e['type']], 'class="pictofixedwidth opacitymedium"') : '').anxhrTimeEntryTypeLabel($e['type'], $langs).'</td>';
 	print '<td class="center">'.($e['homeoffice'] ? img_picto($langs->trans('AnxhrHomeoffice'), 'fa-home') : '').'</td>';
 	print '<td class="hideonsmartphone">'.dol_escape_htmltag($langs->trans('AnxhrSource_'.$e['source'])).'</td>';
@@ -283,7 +298,7 @@ for ($i = 0; $i < 7; $i++) {
 	$d = TimeEntry::timestampToDay($cursor);
 	$row = isset($last7[$d]) ? $last7[$d] : null;
 	print '<tr class="oddeven'.($d === $today ? ' anxhr-today' : '').'">';
-	print '<td class="nowraponall">'.dol_print_date($cursor, '%a', 'tzserver').' '.dol_print_date($cursor, 'dayreduceformat', 'tzserver').'</td>';
+	print '<td class="nowraponall">'.anxhrPrintDateTz($cursor, '%a').' '.anxhrPrintDateTz($cursor, 'dayreduceformat').'</td>';
 	if ($row) {
 		print '<td class="right nowraponall">'.anxhrTimeFormatMinutes($row['worked_min']).'</td>';
 		print '<td class="right nowraponall hideonsmartphone">'.anxhrTimeFormatMinutes($row['target_min']).'</td>';
