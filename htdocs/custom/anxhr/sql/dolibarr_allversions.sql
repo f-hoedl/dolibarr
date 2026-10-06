@@ -1,0 +1,6 @@
+--
+-- Script run when an upgrade of Dolibarr is done. Whatever is the Dolibarr version.
+--
+-- Placeholder for module anxhr. Add here ALTER TABLE statements needed for future
+-- versions of the module (they must be idempotent).
+--
