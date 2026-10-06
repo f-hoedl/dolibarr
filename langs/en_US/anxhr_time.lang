@@ -30,10 +30,10 @@ AnxhrClockOut = Clock out
 AnxhrStartBreak = Start break
 AnxhrEndBreak = End break
 AnxhrCurrentState = Current state
-AnxhrStateIn = Working
+AnxhrStateIn = Clocked in
 AnxhrStateBreak = On break
-AnxhrStateOut = Not clocked in
-AnxhrSince = %s since %s
+AnxhrStateOut = Clocked out
+AnxhrSince = %s at %s
 AnxhrWorkedToday = Worked today
 AnxhrTargetToday = Target today
 AnxhrBalanceMonth = Balance (month)
@@ -113,7 +113,7 @@ AnxhrViolationOrderInvalidDetail = Entries in invalid order (%s ignored)
 #
 # Corrections
 #
-AnxhrNewCorrection = New correction request
+AnxhrNewCorrection = New correction
 AnxhrRequestCorrection = Request correction
 AnxhrSendCorrection = Send request
 AnxhrLoadDay = Load day
@@ -129,7 +129,7 @@ AnxhrRefuse = Refuse
 AnxhrCorrectionRequested = Requested
 AnxhrCorrectionApproved = Approved
 AnxhrCorrectionRefused = Refused
-AnxhrCorrectionCreated = Correction request sent
+AnxhrCorrectionCreated = Correction requested
 AnxhrCorrectionApplied = Correction applied
 AnxhrAutoApprovedByHr = Entered by HR
 AnxhrErrorNoEntries = Please enter at least one entry (type and time).
@@ -149,8 +149,8 @@ AnxhrConfirmMonth = Confirm month
 AnxhrConfirmedBy = Confirmed by
 AnxhrDateConfirm = Confirmation date
 AnxhrReopen = Reopen
-AnxhrCreatePeriodsForMonth = Create periods for month
-AnxhrPeriodsCreated = %s period(s) created or updated
+AnxhrCreatePeriodsForMonth = Create monthly closings
+AnxhrPeriodsCreated = %s monthly closing(s) created or updated
 AnxhrExportCsv = Export CSV (payroll)
 AnxhrBalanceStart = Balance start
 AnxhrBalanceEnd = Balance end
@@ -159,7 +159,7 @@ AnxhrZaTaken = Time off in lieu taken
 AnxhrVacationDays = Vacation days
 AnxhrSickDays = Sick days
 AnxhrErrorReasonRequired = A reason is required.
-AnxhrErrorPeriodLocked = The period is approved or exported and cannot be recomputed.
+AnxhrErrorPeriodLocked = The monthly closing is approved or exported and cannot be recomputed.
 AnxhrCsvPersonnelNo = PersonnelNo
 AnxhrCsvName = Name
 AnxhrCsvYear = Year
@@ -183,8 +183,8 @@ AnxhrEditTimeModel = Edit working time model
 AnxhrModelType = Model type
 AnxhrModelTypeFixed = Fixed working time
 AnxhrModelTypeFlex = Flexitime
-AnxhrModelTypeSelfdetermined = Self determined working time
-AnxhrModelTypeHelp = Fixed: hours above target are overtime. Flexitime (paragraph 4b AZG): hours above target are flex credit up to the daily normal maximum. Self determined: like flexitime, recording of duration is sufficient (paragraph 26 (3) AZG).
+AnxhrModelTypeSelfdetermined = Self-determined working time
+AnxhrModelTypeHelp = Fixed: hours above target are overtime. Flexitime (paragraph 4b AZG): hours above target are flex credit up to the daily normal maximum. Self-determined: like flexitime, recording of duration is sufficient (paragraph 26 (3) AZG).
 AnxhrWeeklyHours = Weekly hours
 AnxhrWeeklyHoursModelHelp = Leave empty to use the sum of the daily targets.
 AnxhrDailyMinutes = Daily target (hh:mm)
@@ -234,7 +234,7 @@ AnxhrConfirmDeleteKv = Delete this parameter set of %s?
 AnxhrNewRate = New rate
 AnxhrEditRate = Edit rate
 AnxhrCapPerYear = Annual cap (km)
-AnxhrCapPerYearHelp = Tax free maximum per calendar year, e.g. 30000 km for cars, 3000 km for bicycles. Kilometres above are taxable.
+AnxhrCapPerYearHelp = Tax-free maximum per calendar year, e.g. 30000 km for cars, 3000 km for bicycles. Kilometres above are taxable.
 AnxhrTravelRateCodeHelp = Codes: taggeld_in, naechtigung_in, km_car, km_motorbike, km_bike, km_passenger, taggeld_XX and naechtigung_XX (XX = ISO country code) for travel abroad.
 AnxhrRatesHelp = Rates are kept as history with a valid from date. A trip uses the rates valid on the trip date. Never change an old rate, add a new row instead.
 AnxhrCurrentlyValid = Currently valid
@@ -242,3 +242,9 @@ AnxhrInstallAustrianDefaults = Install Austrian defaults
 AnxhrInstallAustrianDefaultsHelp = Adds the legal Austrian rates (per diem, night allowance, mileage) that are missing. Existing rows are not changed.
 AnxhrDefaultRatesInstalled = %s rate(s) added
 AnxhrConfirmDeleteRate = Delete this rate of %s?
+
+#
+# UX review
+#
+AnxhrNoDayData = No time data
+AnxhrEntryTypeNth = Entry %s

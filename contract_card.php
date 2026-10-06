@@ -234,9 +234,31 @@ if ($action == 'create') {
 			$prefill = null;
 		}
 	}
+	if (!$prefill) {
+		// Sensible defaults for a new contract: field defaults, start today, active unless the employee already
+		// has an active contract (activating a second one would end the current one automatically).
+		$prefill = new HrContract($db);
+		foreach ($object->fields as $key => $val) {
+			$prefill->$key = (isset($val['default']) && $val['default'] !== '(PROV)' ? $val['default'] : '');
+		}
+		$prefill->date_start = dol_now();
+		$prefill->status = HrContract::STATUS_ACTIVE;
+		$fkuserdefault = GETPOSTINT('fk_user');
+		if ($fkuserdefault > 0) {
+			$prefill->fk_user = $fkuserdefault;
+			$sqlactive = "SELECT COUNT(t.rowid) as nb FROM ".$db->prefix()."anxhr_contract as t";
+			$sqlactive .= " WHERE t.fk_user = ".((int) $fkuserdefault)." AND t.status = ".((int) HrContract::STATUS_ACTIVE);
+			$sqlactive .= " AND t.entity IN (".getEntity('anxhr_contract').")";
+			$resactive = $db->query($sqlactive);
+			$objactive = ($resactive ? $db->fetch_object($resactive) : null);
+			if (!$objactive || (int) $objactive->nb > 0) {
+				$prefill->status = HrContract::STATUS_DRAFT;
+			}
+		}
+	}
 
 	print load_fiche_titre($title, '', $object->picto);
-	if ($prefill) {
+	if ($fromid > 0 && $prefill && !empty($prefill->ref)) {
 		print info_admin($langs->trans('AnxhrNewVersionInfo', $prefill->ref), 0, 0, '1');
 	}
 
@@ -374,8 +396,8 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 		if ($resql) {
 			while ($obj = $db->fetch_object($resql)) {
 				$deadlinestatic->setVarsFromFetchObj($obj);
-				print '<tr class="oddeven"><td class="tdoverflowmax250">'.$deadlinestatic->getNomUrl(1).'</td>';
-				print '<td class="center">'.dol_print_date($deadlinestatic->date_due, 'day').'</td>';
+				print '<tr class="oddeven"><td class="tdoverflowmax200">'.$deadlinestatic->getNomUrl(1).'</td>';
+				print '<td class="center nowraponall">'.dol_print_date($deadlinestatic->date_due, 'day').'</td>';
 				print '<td class="right">'.$deadlinestatic->getLibStatut(5).'</td></tr>';
 				$nb++;
 			}
@@ -397,7 +419,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 		$resql = $db->query($sql);
 		print load_fiche_titre($langs->trans('AnxhrContractHistory'), '', $object->picto);
 		print '<div class="div-table-responsive-no-min"><table class="noborder centpercent">';
-		print '<tr class="liste_titre"><th>'.$langs->trans('Ref').'</th><th class="center">'.$langs->trans('AnxhrPeriod').'</th><th class="right">'.$langs->trans('AnxhrWeeklyHours').'</th><th class="right">'.$langs->trans('Status').'</th></tr>';
+		print '<tr class="liste_titre"><th>'.$langs->trans('Ref').'</th><th class="center">'.$langs->trans('AnxhrPeriod').'</th><th class="right hideonsmartphone">'.$langs->trans('AnxhrWeeklyHours').'</th><th class="right">'.$langs->trans('Status').'</th></tr>';
 		if ($resql) {
 			while ($obj = $db->fetch_object($resql)) {
 				$contractstatic->id = (int) $obj->rowid;
@@ -408,7 +430,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 				$contractstatic->weekly_hours = $obj->weekly_hours;
 				print '<tr class="oddeven'.($obj->rowid == $object->id ? ' highlight' : '').'"><td class="nowraponall">'.$contractstatic->getNomUrl(1).'</td>';
 				print '<td class="center nowraponall">'.dol_print_date($contractstatic->date_start, 'day').' - '.(empty($contractstatic->date_end) ? '...' : dol_print_date($contractstatic->date_end, 'day')).'</td>';
-				print '<td class="right">'.($obj->weekly_hours !== null ? price($obj->weekly_hours, 0, $langs, 0, -1, 2) : '').'</td>';
+				print '<td class="right hideonsmartphone">'.($obj->weekly_hours !== null ? price($obj->weekly_hours, 0, $langs, 0, -1, 2) : '').'</td>';
 				print '<td class="right">'.$contractstatic->getLibStatut(5).'</td></tr>';
 			}
 			$db->free($resql);

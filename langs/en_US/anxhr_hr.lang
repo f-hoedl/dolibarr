@@ -7,15 +7,15 @@
 #
 AnxhrEmployee = Employee
 AnxhrContracts = Employment contracts
-AnxhrDeadline = HR deadline
-AnxhrDeadlines = HR deadlines
+AnxhrDeadline = Deadline
+AnxhrDeadlines = Deadlines
 AnxhrEmergencyContact = Emergency contact
 AnxhrHandover = Handover
-AnxhrHandovers = Handovers (devices, keys, access rights)
+AnxhrHandovers = Handovers
 AnxhrChecklist = Checklist
 AnxhrChecklistItems = Checklist items
 AnxhrChecklistTemplate = Checklist template
-AnxhrNewDeadline = New HR deadline
+AnxhrNewDeadline = New deadline
 AnxhrNewChecklist = New checklist
 
 #
@@ -71,15 +71,15 @@ AnxhrDisabilityStatus = Disability status
 AnxhrDisabilityStatusHelp = Special category of personal data (art. 9 GDPR), stored encrypted and visible to HR only. Example: favoured disabled person, valid until.
 AnxhrDisabilityStatusTooLong = The disability status text is too long (about 100 characters maximum)
 AnxhrPeriod = Period
-AnxhrContractHistory = Contract history of employee
-AnxhrDeleteContract = Delete contract
+AnxhrContractHistory = Contract history
+AnxhrDeleteContract = Delete employment contract
 AnxhrConfirmDeleteContract = Are you sure you want to delete this contract and its deadlines?
 AnxhrActivateContract = Activate
 AnxhrConfirmActivateContract = Activate contract %s? Older active contracts of the employee are ended, deadlines are generated and the user card is updated.
-AnxhrContractActivated = Contract activated
-AnxhrEndContract = End contract
-AnxhrConfirmEndContract = End contract %s at the following date?
-AnxhrContractEnded = Contract ended
+AnxhrContractActivated = Employment contract activated
+AnxhrEndContract = End employment contract
+AnxhrConfirmEndContract = End employment contract %s at the following date?
+AnxhrContractEnded = Employment contract ended
 AnxhrContractsAutoEnded = The following previous contracts were ended automatically (end date = day before the new start date): %s
 AnxhrNewVersion = New version
 AnxhrNewVersionHelp = Create a new contract version (for example change of hours or extension). The current contract is ended automatically the day before the new start date.
@@ -124,11 +124,11 @@ AnxhrDateOut = Handed out on
 AnxhrDateReturn = Returned on
 AnxhrConditionOut = Condition when handed out
 AnxhrConditionReturn = Condition when returned
-AnxhrSetReturned = Returned
-AnxhrSetRevoked = Revoked
+AnxhrSetReturned = Record return
+AnxhrSetRevoked = Revoke access
 AnxhrConfirmSetReturned = Record the return of %s?
 AnxhrHandoverReturned = Return recorded
-AnxhrSetLost = Lost
+AnxhrSetLost = Report as lost
 AnxhrConfirmSetLost = Mark %s as lost?
 AnxhrConfirmReopenHandover = Set %s back to handed out?
 AnxhrDeleteHandover = Delete handover
@@ -148,7 +148,7 @@ AnxhrRoleSupervisor = Supervisor
 AnxhrRoleEmployee = Employee
 AnxhrDateDone = Done on
 AnxhrDoneBy = Done by
-AnxhrItemDone = Done
+AnxhrItemDone = Mark done
 AnxhrItemSkip = Skip
 AnxhrCreateHandover = Create handover
 AnxhrAddItem = Add an item
@@ -177,3 +177,9 @@ AnxhrConfirmDeleteChecklistTemplate = Delete template %s and all its items? Exis
 # Lists
 #
 AnxhrExportCsvHelp = Export the filtered list with the selected columns as CSV file
+
+#
+# UX review
+#
+AnxhrCancelChecklist = Cancel checklist
+AnxhrCancelDeadline = Cancel deadline

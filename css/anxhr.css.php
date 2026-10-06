@@ -98,28 +98,28 @@ header('Cache-Control: max-age=10800, public, must-revalidate');
 
 
 
-/* KPI tiles of the HR cockpit */
+/* KPI tiles of the HR cockpit: grid so all tiles have the same width and height */
 .anxhr-kpi-grid {
-	display: flex;
-	flex-wrap: wrap;
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
 	gap: 12px;
 	margin: 10px 0 20px 0;
 }
 a.anxhr-kpi {
 	display: flex;
 	flex-direction: column;
-	flex: 1 1 160px;
-	max-width: 260px;
-	min-width: 140px;
+	min-height: 110px;
 	padding: 12px 15px;
 	border: 1px solid var(--colortopbordertitle1, #e0e0e0);
+	border-left: 4px solid var(--colortopbordertitle1, #e0e0e0);
 	border-radius: 6px;
 	background: var(--colorbacklineimpair1, #fff);
 	text-decoration: none;
 	color: inherit;
 	position: relative;
+	box-sizing: border-box;
 }
-a.anxhr-kpi:hover {
+a.anxhr-kpi:hover, a.anxhr-kpi:focus-visible {
 	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
 	text-decoration: none;
 }
@@ -138,9 +138,19 @@ a.anxhr-kpi:hover {
 .anxhr-kpi-label {
 	opacity: 0.8;
 	font-size: 0.9em;
+	padding-right: 30px;
+}
+.anxhr-kpi-link {
+	margin-top: auto;
+	padding-top: 6px;
+	font-size: 0.85em;
+	color: var(--colortextlink, #0a1464);
 }
 a.anxhr-kpi.anxhr-kpi-attention {
-	border-left: 4px solid #bc9526;
+	border-left-color: #bc9526;
+}
+a.anxhr-kpi.anxhr-kpi-zero .anxhr-kpi-value {
+	opacity: 0.6;
 }
 
 /* Progress bar */
@@ -197,6 +207,42 @@ a.anxhr-clock-badge .pictofixedwidth {
 	color: #fff;
 }
 
+/* Block titles of the HR tab: label left, actions right */
+.anxhr-blocktitle {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 4px 10px;
+}
+.anxhr-blocktitle-actions {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	font-weight: normal;
+}
+.anxhr-blocktitle-actions .btnTitle {
+	margin: 0;
+	padding: 0 4px;
+	min-width: 0;
+}
+
+/* Section separators of card pages (same idiom as core extrafield separators) */
+tr.anxhr-section td {
+	padding-top: 14px !important;
+}
+
+/* Add item row of a checklist */
+.anxhr-additem {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 6px 10px;
+}
+.anxhr-additem input[name=item_label] {
+	flex: 1 1 220px;
+}
+
 /* Inline add form on HR tab */
 form.anxhr-inline-form {
 	display: flex;
@@ -207,10 +253,13 @@ form.anxhr-inline-form {
 
 /* Mobile tweaks */
 @media only screen and (max-width: 767px) {
+	.anxhr-kpi-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 8px;
+	}
 	a.anxhr-kpi {
-		flex: 1 1 45%;
-		max-width: none;
-		min-width: 120px;
+		min-height: 100px;
+		padding: 10px;
 	}
 	.anxhr-kpi-value {
 		font-size: 1.6em;
@@ -221,5 +270,10 @@ form.anxhr-inline-form {
 	form.anxhr-inline-form input {
 		flex: 1 1 45%;
 		max-width: none;
+		min-height: 36px;
+	}
+	form.anxhr-inline-form button {
+		flex: 1 1 100%;
+		min-height: 40px;
 	}
 }

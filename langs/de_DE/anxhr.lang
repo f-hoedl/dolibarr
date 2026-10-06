@@ -33,11 +33,11 @@ AnxhrMenuEmployees = Mitarbeiter
 AnxhrMenuContracts = Dienstverträge
 AnxhrMenuDeadlines = Fristen
 AnxhrMenuChecklists = Checklisten
-AnxhrMenuHandover = Geräte und Zugänge
-AnxhrMenuMyTime = Meine Zeit
-AnxhrMenuTimeDays = Tagesübersicht
-AnxhrMenuCorrections = Korrekturanträge
-AnxhrMenuMonthlyPeriods = Monatsabschlüsse
+AnxhrMenuHandover = Übergaben
+AnxhrMenuMyTime = Zeiterfassung
+AnxhrMenuTimeDays = Monatsansicht
+AnxhrMenuCorrections = Korrekturen
+AnxhrMenuMonthlyPeriods = Monatsabschluss
 AnxhrMenuLeaveRequests = Abwesenheitsanträge
 AnxhrMenuExpenseReports = Reisekostenabrechnungen
 
@@ -79,7 +79,7 @@ AnxhrAdminTimeModels = Arbeitszeitmodelle
 AnxhrAdminRates = Sätze
 AnxhrAdminChecklistTemplates = Checklisten-Vorlagen
 AnxhrSetupSectionGeneral = Allgemein
-AnxhrSetupSectionTime = Arbeitszeiterfassung
+AnxhrSetupSectionTime = Zeiterfassung
 AnxhrSetupSectionPrivacy = Datenschutz
 ANXHR_DEFAULT_KV = Standard-Kollektivvertrag (Code)
 ANXHR_DEFAULT_KVTooltip = Code des Kollektivvertrags, der verwendet wird, wenn im Dienstvertrag keiner hinterlegt ist, zum Beispiel SWOE.
@@ -96,7 +96,7 @@ ANXHR_RETENTION_YEARSTooltip = Zeitaufzeichnungen werden diese Anzahl an Jahren 
 # Dictionaries
 #
 AnxhrDictDeadlineTypes = ANX HR - Fristarten
-AnxhrDictHandoverCategories = ANX HR - Ausgabekategorien
+AnxhrDictHandoverCategories = ANX HR - Übergabekategorien
 AnxhrDictCodeHelp = Eindeutiger Code in Großbuchstaben, ohne Leerzeichen
 AnxhrDictRemindDaysHelp = Tage vor Fälligkeit, an denen erinnert wird, durch Beistrich getrennt (zum Beispiel 30,14,7)
 Remind_days = Erinnerungstage
@@ -122,7 +122,7 @@ AnxhrDeadlineReminderNote = Fällig am %s, in %s Tag(en).
 #
 Notify_ANXHR_DEADLINE_REMIND = Erinnerung an HR-Frist
 Notify_ANXHR_TIMEPERIOD_APPROVE = Monatsabschluss genehmigt
-Notify_ANXHR_TIMECORRECTION_APPROVE = Korrekturantrag genehmigt
+Notify_ANXHR_TIMECORRECTION_APPROVE = Korrektur genehmigt
 
 #
 # Clock widget
@@ -139,7 +139,7 @@ AnxhrCockpit = HR-Cockpit
 AnxhrCockpitWelcome = Willkommen im Personalbereich. Über das Menü links erreichen Sie Ihre Zeitaufzeichnungen und Anträge.
 AnxhrKpiDeadlines30 = Fristen in den nächsten 30 Tagen
 AnxhrKpiChecklistsInProgress = Offene Checklisten
-AnxhrKpiOpenCorrections = Offene Korrekturanträge
+AnxhrKpiOpenCorrections = Offene Korrekturen
 AnxhrKpiPeriodsToApprove = Zu genehmigende Monatsabschlüsse
 AnxhrKpiMissingClockOut = Fehlende Ausstempelung gestern
 AnxhrMySpace = Mein Bereich
@@ -184,9 +184,9 @@ AnxhrRelation = Beziehung
 AnxhrNoEmergencyContact = Kein Notfallkontakt erfasst
 AnxhrDeleteEmergencyContact = Notfallkontakt löschen
 AnxhrConfirmDeleteEmergencyContact = Möchten Sie diesen Notfallkontakt wirklich löschen?
-AnxhrEquipmentAndAccess = Geräte und Zugänge
-AnxhrNewHandover = Neue Ausgabe
-AnxhrNoOpenHandover = Keine Geräte oder Zugänge ausgegeben
+AnxhrEquipmentAndAccess = Übergaben (Geräte und Zugänge)
+AnxhrNewHandover = Neue Übergabe
+AnxhrNoOpenHandover = Keine offenen Übergaben
 AnxhrHandoverCatHardware = Hardware
 AnxhrHandoverCatKey = Schlüssel
 AnxhrHandoverCatToken = Token oder Ausweis
@@ -222,3 +222,10 @@ AnxhrViolationHolidayWork = Arbeit an einem Feiertag oder Sonntag
 AnxhrViolationOpenEntry = Offene Buchung (Ausstempelung fehlt)
 AnxhrViolationOrderInvalid = Ungültige Reihenfolge der Buchungen
 AnxhrViolationMaxWeekly60h = Höchstarbeitszeit von 60 Stunden pro Woche überschritten
+
+#
+# UX review
+#
+AnxhrShowAllDeadlines = Alle Fristen
+AnxhrKpiShowList = Liste anzeigen
+AnxhrNoMissingClockOut = Gestern haben alle ausgestempelt

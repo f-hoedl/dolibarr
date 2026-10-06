@@ -317,11 +317,14 @@ if ($canreadtime && anxhrTableExists($db, 'anxhr_time_day')) {
  */
 function anxhrTabBlockTitle($title, $picto, $morehtmlright = '', $colspan = 2)
 {
+	// One header cell spanning the whole table: title on the left, actions on the right (never squeezed into a column)
 	print '<tr class="liste_titre">';
-	print '<th colspan="'.((int) $colspan - ($morehtmlright ? 1 : 0)).'">'.img_picto('', $picto, 'class="pictofixedwidth"').dol_escape_htmltag($title).'</th>';
+	print '<th colspan="'.((int) $colspan).'"><div class="anxhr-blocktitle">';
+	print '<span class="anxhr-blocktitle-label">'.img_picto('', $picto, 'class="pictofixedwidth"').dol_escape_htmltag($title).'</span>';
 	if ($morehtmlright) {
-		print '<th class="right nowraponall">'.$morehtmlright.'</th>';
+		print '<span class="anxhr-blocktitle-actions nowraponall">'.$morehtmlright.'</span>';
 	}
+	print '</div></th>';
 	print '</tr>';
 }
 
@@ -410,7 +413,7 @@ if ($canreadcontract) {
 
 // Deadlines
 if ($canreaddeadline) {
-	$more = '<a href="'.dol_buildpath('/anxhr/deadline_list.php', 1).'?search_fk_user='.((int) $object->id).'">'.$langs->trans('FullList').'</a>';
+	$more = '<a href="'.dol_buildpath('/anxhr/deadline_list.php', 1).'?search_fk_user='.((int) $object->id).'&mainmenu=anxhr">'.$langs->trans('FullList').'</a>';
 	print '<div class="div-table-responsive-no-min">';
 	print '<table class="noborder centpercent">';
 	anxhrTabBlockTitle($langs->trans('AnxhrNextDeadlines'), 'fa-calendar-check', $more, 3);
@@ -420,9 +423,10 @@ if ($canreaddeadline) {
 	foreach ($deadlines as $obj) {
 		$ts = $db->jdate($obj->date_due);
 		print '<tr class="oddeven">';
-		print '<td class="tdoverflowmax200"><a href="'.dol_buildpath('/anxhr/deadline_card.php', 1).'?id='.((int) $obj->rowid).'">'.dol_escape_htmltag($obj->label ? $obj->label : anxhrDeadlineTypeLabel($obj->type)).'</a></td>';
-		print '<td class="nowraponall">'.dol_print_date($ts, 'day').'</td>';
-		print '<td class="right nowraponall">'.anxhrDueBadge($ts, $today).'</td>';
+		$dlabel = ($obj->label ? $obj->label : anxhrDeadlineTypeLabel($obj->type));
+		print '<td class="tdoverflowmax200" title="'.dolPrintHTMLForAttribute($dlabel).'"><a href="'.dol_buildpath('/anxhr/deadline_card.php', 1).'?id='.((int) $obj->rowid).'">'.img_picto('', 'fa-hourglass-half', 'class="pictofixedwidth opacitymedium"').dol_escape_htmltag($dlabel).'</a></td>';
+		print '<td class="nowraponall hideonsmartphone">'.dol_print_date($ts, 'day').'</td>';
+		print '<td class="right nowraponall" title="'.dolPrintHTMLForAttribute(dol_print_date($ts, 'day')).'">'.anxhrDueBadge($ts, $today).'</td>';
 		print '</tr>';
 	}
 	print '</table>';
@@ -436,7 +440,7 @@ if ($tableemergency) {
 	print '<table class="noborder centpercent">';
 	anxhrTabBlockTitle($langs->trans('AnxhrEmergencyContacts'), 'fa-phone', '', 5);
 	print '<tr class="liste_titre_filter">';
-	print '<td>'.$langs->trans('Name').'</td><td>'.$langs->trans('AnxhrRelation').'</td><td>'.$langs->trans('Phone').'</td><td class="hideonsmartphone">'.$langs->trans('Email').'</td><td></td>';
+	print '<td>'.$langs->trans('Name').'</td><td class="hideonsmartphone">'.$langs->trans('AnxhrRelation').'</td><td>'.$langs->trans('Phone').'</td><td class="hideonsmartphone">'.$langs->trans('Email').'</td><td></td>';
 	print '</tr>';
 	if (empty($contacts)) {
 		print '<tr class="oddeven"><td colspan="5"><span class="opacitymedium">'.$langs->trans('AnxhrNoEmergencyContact').'</span></td></tr>';
@@ -444,12 +448,12 @@ if ($tableemergency) {
 	foreach ($contacts as $obj) {
 		print '<tr class="oddeven">';
 		print '<td class="tdoverflowmax150">'.dol_escape_htmltag($obj->name).'</td>';
-		print '<td class="tdoverflowmax100">'.dol_escape_htmltag((string) $obj->relation).'</td>';
+		print '<td class="tdoverflowmax100 hideonsmartphone">'.dol_escape_htmltag((string) $obj->relation).'</td>';
 		print '<td class="nowraponall">'.dol_print_phone((string) $obj->phone, '', 0, 0, 'AC_TEL').'</td>';
 		print '<td class="tdoverflowmax150 hideonsmartphone">'.dol_print_email((string) $obj->email, 0, 0, 1).'</td>';
 		print '<td class="right">';
 		if ($canwriteemployee) {
-			print '<a class="reposition" href="'.$selfurl.'&action=delete_emergency&ecid='.((int) $obj->rowid).'&token='.newToken().'">'.img_delete().'</a>';
+			print '<a class="reposition" href="'.$selfurl.'&action=delete_emergency&ecid='.((int) $obj->rowid).'&token='.newToken().'" aria-label="'.dolPrintHTMLForAttribute($langs->trans('AnxhrDeleteEmergencyContact')).'">'.img_delete($langs->trans('AnxhrDeleteEmergencyContact')).'</a>';
 		}
 		print '</td>';
 		print '</tr>';
@@ -462,11 +466,11 @@ if ($tableemergency) {
 		print '<input type="hidden" name="token" value="'.newToken().'">';
 		print '<input type="hidden" name="action" value="add_emergency">';
 		print '<input type="hidden" name="id" value="'.((int) $object->id).'">';
-		print '<input type="text" name="ec_name" class="minwidth100 maxwidth150" maxlength="255" placeholder="'.dolPrintHTMLForAttribute($langs->trans('Name')).'" required>';
-		print '<input type="text" name="ec_relation" class="maxwidth100" maxlength="128" placeholder="'.dolPrintHTMLForAttribute($langs->trans('AnxhrRelation')).'">';
-		print '<input type="tel" name="ec_phone" class="maxwidth125" maxlength="64" placeholder="'.dolPrintHTMLForAttribute($langs->trans('Phone')).'">';
-		print '<input type="email" name="ec_email" class="maxwidth150" maxlength="255" placeholder="'.dolPrintHTMLForAttribute($langs->trans('Email')).'">';
-		print '<input type="submit" class="button smallpaddingimp" value="'.dolPrintHTMLForAttribute($langs->trans('Add')).'">';
+		print '<input type="text" name="ec_name" class="minwidth100 maxwidth150" maxlength="255" placeholder="'.dolPrintHTMLForAttribute($langs->trans('Name')).'*" aria-label="'.dolPrintHTMLForAttribute($langs->trans('Name')).'" required aria-required="true">';
+		print '<input type="text" name="ec_relation" class="maxwidth100" maxlength="128" placeholder="'.dolPrintHTMLForAttribute($langs->trans('AnxhrRelation')).'" aria-label="'.dolPrintHTMLForAttribute($langs->trans('AnxhrRelation')).'">';
+		print '<input type="tel" name="ec_phone" class="maxwidth125" maxlength="64" placeholder="'.dolPrintHTMLForAttribute($langs->trans('Phone')).'" aria-label="'.dolPrintHTMLForAttribute($langs->trans('Phone')).'">';
+		print '<input type="email" name="ec_email" class="maxwidth150" maxlength="255" placeholder="'.dolPrintHTMLForAttribute($langs->trans('Email')).'" aria-label="'.dolPrintHTMLForAttribute($langs->trans('Email')).'">';
+		print '<button type="submit" class="button smallpaddingimp">'.img_picto('', 'fa-plus', 'class="pictofixedwidth"').$langs->trans('Add').'</button>';
 		print '</form>';
 	}
 	print '<br>';
@@ -494,7 +498,7 @@ if ($canreadhandover) {
 		print '<tr class="oddeven">';
 		print '<td class="tdoverflowmax200"><a href="'.dol_buildpath('/anxhr/handover_card.php', 1).'?id='.((int) $obj->rowid).'">'.dol_escape_htmltag($obj->label).'</a>';
 		print ' <span class="opacitymedium small">'.dol_escape_htmltag(anxhrHandoverCategoryLabel($obj->category)).'</span></td>';
-		print '<td class="tdoverflowmax100">'.dol_escape_htmltag($detail).'</td>';
+		print '<td class="tdoverflowmax100 hideonsmartphone">'.dol_escape_htmltag($detail).'</td>';
 		print '<td class="right nowraponall">'.dol_print_date($db->jdate($obj->date_out), 'day').'</td>';
 		print '</tr>';
 	}
@@ -516,7 +520,11 @@ if ($canreadchecklist) {
 		print '<td class="tdoverflowmax150"><a href="'.dol_buildpath('/anxhr/checklist_card.php', 1).'?id='.((int) $obj->rowid).'">'.dol_escape_htmltag($obj->ref).'</a>';
 		print ' <span class="opacitymedium small">'.dol_escape_htmltag(anxhrChecklistTypeLabel($obj->checklist_type)).'</span></td>';
 		print '<td class="minwidth100">'.anxhrProgressBar($obj->pct).'</td>';
-		print '<td class="right nowraponall">'.((int) $obj->pct).' %</td>';
+		print '<td class="right nowraponall">'.((int) $obj->pct).' %';
+		if (!empty($obj->nbitems)) {
+			print ' <span class="opacitymedium small">('.((int) $obj->nbdone).'/'.((int) $obj->nbitems).')</span>';
+		}
+		print '</td>';
 		print '</tr>';
 	}
 	print '</table>';
@@ -526,7 +534,7 @@ if ($canreadchecklist) {
 
 // Time of current month
 if ($canreadtime) {
-	$more = '<a href="'.dol_buildpath('/anxhr/time_day.php', 1).'?id='.((int) $object->id).'">'.$langs->trans('AnxhrDetails').'</a>';
+	$more = '<a href="'.dol_buildpath('/anxhr/time_day.php', 1).'?id='.((int) $object->id).'&mainmenu=anxhr">'.$langs->trans('AnxhrDetails').'</a>';
 	print '<div class="div-table-responsive-no-min">';
 	print '<table class="noborder centpercent">';
 	anxhrTabBlockTitle($langs->trans('AnxhrTimeThisMonth'), 'fa-clock', $more);
@@ -538,7 +546,7 @@ if ($canreadtime) {
 		$diff = (int) $timemonth->diff;
 		anxhrTabRow($langs->trans('AnxhrWorked'), anxhrFormatMinutes($worked));
 		anxhrTabRow($langs->trans('AnxhrTarget'), anxhrFormatMinutes($target));
-		anxhrTabRow($langs->trans('AnxhrBalance'), '<span class="'.($diff < 0 ? 'anxhr-negative' : 'anxhr-positive').'">'.anxhrFormatMinutes($diff).'</span>');
+		anxhrTabRow($langs->trans('AnxhrBalance'), '<span class="'.($diff < 0 ? 'anxhr-negative' : 'anxhr-positive').'">'.($diff > 0 ? '+' : '').anxhrFormatMinutes($diff).'</span>');
 		anxhrTabRow($langs->trans('AnxhrProgress'), anxhrProgressBar($target > 0 ? (int) floor(100 * $worked / $target) : 0));
 	}
 	print '</table>';

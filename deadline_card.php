@@ -62,6 +62,7 @@ if (!$res) {
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.form.class.php';
 dol_include_once('/anxhr/class/hrdeadline.class.php');
 dol_include_once('/anxhr/lib/anxhr_hr.lib.php');
+dol_include_once('/anxhr/lib/anxhr.lib.php');
 
 $langs->loadLangs(array('anxhr@anxhr', 'anxhr_hr@anxhr', 'users', 'other'));
 
@@ -231,7 +232,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 		$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"].'?id='.$object->id, $langs->trans('AnxhrMarkDone'), $langs->trans('AnxhrConfirmMarkDone'), 'confirm_markdone', '', 'yes', 1);
 	}
 	if ($action == 'canceldeadline') {
-		$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"].'?id='.$object->id, $langs->trans('Cancel'), $langs->trans('AnxhrConfirmCancelDeadline'), 'confirm_canceldeadline', '', 0, 1);
+		$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"].'?id='.$object->id, $langs->trans('AnxhrCancelDeadline'), $langs->trans('AnxhrConfirmCancelDeadline'), 'confirm_canceldeadline', '', 0, 1);
 	}
 	if ($action == 'reopendeadline') {
 		$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"].'?id='.$object->id, $langs->trans('ReOpen'), $langs->trans('AnxhrConfirmReopenDeadline'), 'confirm_reopendeadline', '', 'yes', 1);
@@ -272,7 +273,8 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 		// Days left
 		$daysleft = $object->getDaysLeft();
 		if ($object->status == HrDeadline::STATUS_OPEN && $daysleft !== null) {
-			print '<tr><td class="titlefieldmiddle">'.$langs->trans('AnxhrDaysLeft').'</td><td>'.$object->getLibStatut(5).' <span class="valignmiddle">'.((int) $daysleft).'</span></td></tr>';
+			// Urgency badge (overdue / due soon) instead of repeating the status shown in the banner
+			print '<tr><td class="titlefieldmiddle">'.$langs->trans('AnxhrDaysLeft').'</td><td>'.anxhrDueBadge($object->date_due, dol_get_first_hour(dol_now())).'</td></tr>';
 		}
 		include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_view.tpl.php';
 		print '</table>';
@@ -295,7 +297,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 		}
 		print dolGetButtonAction('', $langs->trans('Modify'), 'default', $_SERVER["PHP_SELF"].'?id='.$object->id.'&action=edit&token='.newToken(), '', $permissiontoadd);
 		if ($object->status == HrDeadline::STATUS_OPEN) {
-			print dolGetButtonAction('', $langs->trans('Cancel'), 'default', $_SERVER["PHP_SELF"].'?id='.$object->id.'&action=canceldeadline&token='.newToken(), '', $permissiontoadd);
+			print dolGetButtonAction('', $langs->trans('AnxhrCancelDeadline'), 'default', $_SERVER["PHP_SELF"].'?id='.$object->id.'&action=canceldeadline&token='.newToken(), '', $permissiontoadd);
 		} else {
 			print dolGetButtonAction('', $langs->trans('ReOpen'), 'default', $_SERVER["PHP_SELF"].'?id='.$object->id.'&action=reopendeadline&token='.newToken(), '', $permissiontoadd);
 		}

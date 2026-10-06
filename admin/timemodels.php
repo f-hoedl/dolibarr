@@ -251,7 +251,7 @@ foreach ($models as $m) {
 	}
 	print '<tr class="oddeven">';
 	print '<td>'.dol_escape_htmltag($m->ref).'</td>';
-	print '<td class="tdoverflowmax200">'.dol_escape_htmltag($m->label).'</td>';
+	print '<td class="tdoverflowmax150" title="'.dolPrintHTMLForAttribute($m->label).'">'.dol_escape_htmltag($m->label).'</td>';
 	print '<td>'.dol_escape_htmltag(isset($m->fields['model_type']['arrayofkeyval'][$m->model_type]) ? $m->fields['model_type']['arrayofkeyval'][$m->model_type] : $m->model_type).'</td>';
 	print '<td class="right">'.price($m->weekly_hours, 0, $langs, 0, -1, 2).'</td>';
 	print '<td class="hideonsmartphone small">'.dol_escape_htmltag(implode(', ', $dmtxt)).'</td>';
@@ -314,7 +314,7 @@ if (empty($kvlist)) {
 foreach ($kvlist as $r) {
 	print '<tr class="oddeven">';
 	print '<td>'.dol_escape_htmltag($r->kv_code).'</td>';
-	print '<td class="tdoverflowmax200">'.dol_escape_htmltag($r->label).'</td>';
+	print '<td class="tdoverflowmax150" title="'.dolPrintHTMLForAttribute($r->label).'">'.dol_escape_htmltag($r->label).'</td>';
 	print '<td>'.dol_print_date($r->valid_from, 'day', 'tzserver').'</td>';
 	print '<td class="right">'.price($r->weekly_hours, 0, $langs, 0, -1, 2).'</td>';
 	print '<td class="right">'.((int) $r->ot_pct).' %</td>';

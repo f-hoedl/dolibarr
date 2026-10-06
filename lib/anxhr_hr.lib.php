@@ -614,7 +614,8 @@ function anxhrPrintFieldsBySection($object, $sections, $mode, $form, $prefill = 
 			$rows .= anxhrGetFieldRow($object, $key, $val, $mode, $form, $prefill);
 		}
 		if ($rows !== '') {
-			print '<tr class="liste_titre"><td colspan="2">'.$langs->trans($title).'</td></tr>'."\n";
+			// Same markup as core extrafield separators, so sections look native in view, create and edit mode
+			print '<tr class="trextrafieldseparator anxhr-section"><td colspan="2"><span class="fas fa-square opacitymedium"></span>&nbsp;<strong>'.$langs->trans($title).'</strong></td></tr>'."\n";
 			print $rows;
 		}
 	}

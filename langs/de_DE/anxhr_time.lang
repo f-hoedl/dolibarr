@@ -30,10 +30,10 @@ AnxhrClockOut = Gehen
 AnxhrStartBreak = Pause beginnen
 AnxhrEndBreak = Pause beenden
 AnxhrCurrentState = Aktueller Status
-AnxhrStateIn = Anwesend
+AnxhrStateIn = Eingestempelt
 AnxhrStateBreak = In Pause
-AnxhrStateOut = Nicht eingestempelt
-AnxhrSince = %s seit %s
+AnxhrStateOut = Ausgestempelt
+AnxhrSince = %s um %s
 AnxhrWorkedToday = Heute gearbeitet
 AnxhrTargetToday = Soll heute
 AnxhrBalanceMonth = Saldo (Monat)
@@ -113,7 +113,7 @@ AnxhrViolationOrderInvalidDetail = Buchungen in ungültiger Reihenfolge (%s igno
 #
 # Korrekturen
 #
-AnxhrNewCorrection = Neuer Korrekturantrag
+AnxhrNewCorrection = Neue Korrektur
 AnxhrRequestCorrection = Korrektur beantragen
 AnxhrSendCorrection = Antrag senden
 AnxhrLoadDay = Tag laden
@@ -129,7 +129,7 @@ AnxhrRefuse = Ablehnen
 AnxhrCorrectionRequested = Beantragt
 AnxhrCorrectionApproved = Genehmigt
 AnxhrCorrectionRefused = Abgelehnt
-AnxhrCorrectionCreated = Korrekturantrag gesendet
+AnxhrCorrectionCreated = Korrektur beantragt
 AnxhrCorrectionApplied = Korrektur übernommen
 AnxhrAutoApprovedByHr = Durch HR erfasst
 AnxhrErrorNoEntries = Bitte mindestens eine Buchung (Art und Uhrzeit) eingeben.
@@ -149,8 +149,8 @@ AnxhrConfirmMonth = Monat bestätigen
 AnxhrConfirmedBy = Bestätigt von
 AnxhrDateConfirm = Bestätigungsdatum
 AnxhrReopen = Wieder öffnen
-AnxhrCreatePeriodsForMonth = Perioden für Monat anlegen
-AnxhrPeriodsCreated = %s Periode(n) angelegt oder aktualisiert
+AnxhrCreatePeriodsForMonth = Monatsabschlüsse anlegen
+AnxhrPeriodsCreated = %s Monatsabschluss/-abschlüsse angelegt oder aktualisiert
 AnxhrExportCsv = CSV-Export (Lohnverrechnung)
 AnxhrBalanceStart = Saldo Beginn
 AnxhrBalanceEnd = Saldo Ende
@@ -159,7 +159,7 @@ AnxhrZaTaken = Konsumierter Zeitausgleich
 AnxhrVacationDays = Urlaubstage
 AnxhrSickDays = Krankenstandstage
 AnxhrErrorReasonRequired = Eine Begründung ist erforderlich.
-AnxhrErrorPeriodLocked = Die Periode ist genehmigt oder exportiert und kann nicht neu berechnet werden.
+AnxhrErrorPeriodLocked = Der Monatsabschluss ist genehmigt oder exportiert und kann nicht neu berechnet werden.
 AnxhrCsvPersonnelNo = Personalnummer
 AnxhrCsvName = Name
 AnxhrCsvYear = Jahr
@@ -222,7 +222,7 @@ AnxhrNightStart = Nacht Beginn
 AnxhrNightEnd = Nacht Ende
 AnxhrNightWindow = Nachtzeit
 AnxhrDefaultTimeModel = Standard-Arbeitszeitmodell
-AnxhrDefaultTimeModelHelp = Für Mitarbeiter ohne Vertrag oder ohne Arbeitszeitmodell im Vertrag.
+AnxhrDefaultTimeModelHelp = Für Mitarbeiter ohne Dienstvertrag oder ohne Arbeitszeitmodell im Vertrag.
 AnxhrDefaultKv = Standard-Kollektivvertrag
 AnxhrDefaultKvHelp = Wird verwendet, wenn weder Vertrag noch Arbeitszeitmodell einen KV-Code haben.
 AnxhrConfirmDeleteModel = Arbeitszeitmodell %s löschen?
@@ -242,3 +242,9 @@ AnxhrInstallAustrianDefaults = Österreichische Standardsätze installieren
 AnxhrInstallAustrianDefaultsHelp = Fügt fehlende gesetzliche Sätze für Österreich hinzu (Taggeld, Nächtigungsgeld, Kilometergeld). Bestehende Zeilen bleiben unverändert.
 AnxhrDefaultRatesInstalled = %s Satz/Sätze hinzugefügt
 AnxhrConfirmDeleteRate = Diesen Satz von %s löschen?
+
+#
+# UX review
+#
+AnxhrNoDayData = Keine Zeitdaten
+AnxhrEntryTypeNth = Buchung %s

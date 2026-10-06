@@ -69,7 +69,7 @@ require_once DOL_DOCUMENT_ROOT.'/user/class/user.class.php';
 dol_include_once('/anxhr/lib/anxhr.lib.php');
 
 // Load translation files required by the page
-$langs->loadLangs(array("anxhr@anxhr", "anxhr_hr@anxhr", "users"));
+$langs->loadLangs(array("anxhr@anxhr", "anxhr_hr@anxhr", "anxhr_time@anxhr", "users", "hrm"));
 
 $action = GETPOST('action', 'aZ09');
 
@@ -296,11 +296,13 @@ if (!empty($kpis)) {
 	print '<div class="anxhr-kpi-grid">';
 	foreach ($kpis as $code => $kpi) {
 		$value = ($kpi['value'] === null ? '-' : (int) $kpi['value']);
-		$cls = (is_int($value) && $value > 0 ? ' anxhr-kpi-attention' : '');
-		print '<a class="anxhr-kpi'.$cls.'" id="anxhr-kpi-'.dol_escape_htmltag($code).'" href="'.dol_escape_htmltag($kpi['url']).'">';
-		print '<span class="anxhr-kpi-picto">'.img_picto('', $kpi['picto']).'</span>';
+		$cls = (is_int($value) && $value > 0 ? ' anxhr-kpi-attention' : ' anxhr-kpi-zero');
+		$url = $kpi['url'].(strpos($kpi['url'], '?') === false ? '?' : '&').'mainmenu=anxhr';
+		print '<a class="anxhr-kpi'.$cls.'" id="anxhr-kpi-'.dol_escape_htmltag($code).'" href="'.dol_escape_htmltag($url).'">';
+		print '<span class="anxhr-kpi-picto" aria-hidden="true">'.img_picto('', $kpi['picto']).'</span>';
 		print '<span class="anxhr-kpi-value">'.$value.'</span>';
 		print '<span class="anxhr-kpi-label">'.dol_escape_htmltag($kpi['label']).'</span>';
+		print '<span class="anxhr-kpi-link">'.$langs->trans('AnxhrKpiShowList').img_picto('', 'fa-angle-right', 'class="marginleftonlyshort"').'</span>';
 		print '</a>';
 	}
 	print '</div>';
@@ -320,7 +322,7 @@ if ($canreadown || $canreadall) {
 }
 if ($cantimeown) {
 	print '<tr class="oddeven"><td>'.img_picto('', 'fa-clock', 'class="pictofixedwidth"');
-	print '<a href="'.dol_buildpath('/anxhr/time_clock.php', 1).'">'.$langs->trans("AnxhrMenuMyTime").'</a></td></tr>';
+	print '<a href="'.dol_buildpath('/anxhr/time_clock.php', 1).'?mainmenu=anxhr">'.$langs->trans("AnxhrMyTime").'</a></td></tr>';
 }
 if (isModEnabled('holiday') && $user->hasRight('holiday', 'write')) {
 	print '<tr class="oddeven"><td>'.img_picto('', 'holiday', 'class="pictofixedwidth"');
@@ -333,7 +335,16 @@ if (isModEnabled('expensereport') && $user->hasRight('expensereport', 'creer')) 
 print '</table>';
 print '</div>';
 
-// Missing clock-out list
+// Missing clock-out list (with an empty state when the user may see this information)
+if (isset($kpis['missingout']) && empty($missingclockout)) {
+	print '<br>';
+	print '<div class="div-table-responsive-no-min">';
+	print '<table class="noborder centpercent">';
+	print '<tr class="liste_titre"><th>'.$langs->trans("AnxhrKpiMissingClockOut").'</th></tr>';
+	print '<tr class="oddeven"><td>'.img_picto('', 'fa-check', 'class="pictofixedwidth opacitymedium"').'<span class="opacitymedium">'.$langs->trans("AnxhrNoMissingClockOut").'</span></td></tr>';
+	print '</table>';
+	print '</div>';
+}
 if (!empty($missingclockout)) {
 	print '<br>';
 	print '<div class="div-table-responsive-no-min">';
@@ -347,7 +358,7 @@ if (!empty($missingclockout)) {
 		anxhrCockpitFillUser($userstatic, $obj);
 		print '<tr class="oddeven">';
 		print '<td class="tdoverflowmax200">'.$userstatic->getNomUrl(-1).'</td>';
-		print '<td class="right nowraponall">'.dol_print_date($db->jdate($obj->entry_datetime), 'dayhour', 'tzuserrel').'</td>';
+		print '<td class="right nowraponall"><a href="'.dol_buildpath('/anxhr/time_day.php', 1).'?id='.((int) $obj->fk_user).'&mainmenu=anxhr" title="'.dolPrintHTMLForAttribute($langs->trans('AnxhrMonthView')).'">'.dol_print_date($db->jdate($obj->entry_datetime), 'dayhour', 'tzuserrel').'</a></td>';
 		print '</tr>';
 	}
 	print '</table>';
@@ -363,25 +374,26 @@ if ($canreaddeadline) {
 	print '<div class="div-table-responsive-no-min">';
 	print '<table class="noborder centpercent">';
 	print '<tr class="liste_titre">';
-	print '<th>'.$langs->trans("AnxhrNextDeadlines").'</th>';
+	print '<th>'.img_picto('', 'fa-calendar-check', 'class="pictofixedwidth"').$langs->trans("AnxhrNextDeadlines").'</th>';
 	print '<th class="hideonsmartphone">'.$langs->trans("Employee").'</th>';
-	print '<th class="right">'.$langs->trans("AnxhrDateDue").'</th>';
-	print '<th class="right"></th>';
+	print '<th class="right hideonsmartphone">'.$langs->trans("AnxhrDateDue").'</th>';
+	print '<th class="right"><a href="'.dol_buildpath('/anxhr/deadline_list.php', 1).'?mainmenu=anxhr">'.$langs->trans("AnxhrShowAllDeadlines").'</a></th>';
 	print '</tr>';
 	if (empty($deadlines)) {
-		print '<tr class="oddeven"><td colspan="4"><span class="opacitymedium">'.$langs->trans("AnxhrNoDeadlineSoon").'</span></td></tr>';
+		print '<tr class="oddeven"><td colspan="4">'.img_picto('', 'fa-check', 'class="pictofixedwidth opacitymedium"').'<span class="opacitymedium">'.$langs->trans("AnxhrNoDeadlineSoon").'</span></td></tr>';
 	}
 	foreach ($deadlines as $obj) {
 		$datedue = $db->jdate($obj->date_due);
 		anxhrCockpitFillUser($userstatic, $obj);
 		print '<tr class="oddeven">';
-		print '<td class="tdoverflowmax250">';
-		print '<a href="'.dol_buildpath('/anxhr/deadline_card.php', 1).'?id='.((int) $obj->rowid).'">'.img_picto('', 'fa-calendar-check', 'class="pictofixedwidth"');
-		print dol_escape_htmltag($obj->label ? $obj->label : anxhrDeadlineTypeLabel($obj->type)).'</a>';
+		$dlabel = ($obj->label ? $obj->label : anxhrDeadlineTypeLabel($obj->type));
+		print '<td class="tdoverflowmax250" title="'.dolPrintHTMLForAttribute($dlabel).'">';
+		print '<a href="'.dol_buildpath('/anxhr/deadline_card.php', 1).'?id='.((int) $obj->rowid).'&mainmenu=anxhr">'.img_picto('', 'fa-hourglass-half', 'class="pictofixedwidth"');
+		print dol_escape_htmltag($dlabel).'</a>';
 		print '</td>';
 		print '<td class="tdoverflowmax150 hideonsmartphone">'.$userstatic->getNomUrl(-1).'</td>';
-		print '<td class="right nowraponall">'.dol_print_date($datedue, 'day').'</td>';
-		print '<td class="right nowraponall">'.anxhrDueBadge($datedue, $today).'</td>';
+		print '<td class="right nowraponall hideonsmartphone">'.dol_print_date($datedue, 'day').'</td>';
+		print '<td class="right nowraponall" title="'.dolPrintHTMLForAttribute(dol_print_date($datedue, 'day')).'">'.anxhrDueBadge($datedue, $today).'</td>';
 		print '</tr>';
 	}
 	print '</table>';
