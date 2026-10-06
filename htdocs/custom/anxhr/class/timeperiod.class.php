@@ -79,6 +79,7 @@ class TimePeriod extends CommonObject
 		'date_approve' => array('type' => 'datetime', 'label' => 'AnxhrDateApprove', 'enabled' => 1, 'position' => 53, 'notnull' => 0, 'visible' => 1),
 		'violations_json' => array('type' => 'text', 'label' => 'AnxhrViolations', 'enabled' => 1, 'position' => 55, 'notnull' => 0, 'visible' => 0),
 		'note' => array('type' => 'text', 'label' => 'Note', 'enabled' => 1, 'position' => 60, 'notnull' => 0, 'visible' => 0),
+		'last_main_doc' => array('type' => 'varchar(255)', 'label' => 'LastMainDoc', 'enabled' => 1, 'position' => 70, 'notnull' => 0, 'visible' => 0),
 		'date_creation' => array('type' => 'datetime', 'label' => 'DateCreation', 'enabled' => 1, 'position' => 500, 'notnull' => 1, 'visible' => -2),
 		'tms' => array('type' => 'timestamp', 'label' => 'DateModification', 'enabled' => 1, 'position' => 501, 'notnull' => 0, 'visible' => -2),
 		'fk_user_creat' => array('type' => 'integer:User:user/class/user.class.php', 'label' => 'UserAuthor', 'enabled' => 1, 'position' => 510, 'notnull' => 1, 'visible' => -2, 'foreignkey' => 'user.rowid'),
@@ -129,6 +130,8 @@ class TimePeriod extends CommonObject
 	public $violations_json;
 	/** @var string|null */
 	public $note;
+	/** @var string|null	Monthly sheet PDF, path relative to DOL_DATA_ROOT (core convention) */
+	public $last_main_doc;
 	/** @var int */
 	public $status;
 	/** @var int */
@@ -411,11 +414,164 @@ class TimePeriod extends CommonObject
 			$res = -1;
 		}
 		if ($res > 0) {
+			// Monthly sheet of the approved month (AZG paragraph 26): never blocks the approval
+			$this->generateSheetAfterApproval($approver);
 			$this->db->commit();
 			return 1;
 		}
 		$this->db->rollback();
 		return -1;
+	}
+
+	/**
+	 * Generate the monthly sheet after the approval and file it into the vault (category timesheet)
+	 * when the vault is available. Errors are logged only.
+	 *
+	 * @param	User	$approver	Approver
+	 * @return	void
+	 */
+	protected function generateSheetAfterApproval(User $approver)
+	{
+		try {
+			if ($this->generateDocument('monthly_timesheet', null) <= 0) {
+				dol_syslog(__METHOD__.' monthly sheet of period '.$this->id.' not generated: '.$this->error, LOG_WARNING);
+				return;
+			}
+			$file = $this->getSheetFile();
+			$vaultFile = __DIR__.'/vaultdoc.class.php';
+			if ($file === '' || !file_exists($vaultFile)) {
+				return;
+			}
+			include_once $vaultFile;
+			if (!class_exists('VaultDoc') || !method_exists('VaultDoc', 'createFromFile')) {
+				return;
+			}
+			$ym = sprintf('%04d-%02d', (int) $this->year, (int) $this->month);
+			$label = 'Monatsblatt '.$ym;
+			$res = VaultDoc::createFromFile($this->db, $approver, (int) $this->fk_user, 'timesheet', $ym, $label, $file, true);
+			if ($res <= 0) {
+				dol_syslog(__METHOD__.' vault filing of '.$file.' failed ('.$res.')', LOG_WARNING);
+			}
+		} catch (Throwable $e) {
+			dol_syslog(__METHOD__.' '.$e->getMessage(), LOG_ERR);
+		}
+	}
+
+	/**
+	 * Return the directory of the monthly sheets of a period (not created).
+	 *
+	 * @param	TimePeriod	$period		Period (fk_user, year, month, entity)
+	 * @return	string					Absolute directory or '' if the module output dir is unknown
+	 */
+	public static function getSheetDir($period)
+	{
+		global $conf;
+
+		$entity = (!empty($period->entity) ? (int) $period->entity : (int) $conf->entity);
+		$base = '';
+		if (!empty($conf->anxhr->multidir_output[$entity])) {
+			$base = $conf->anxhr->multidir_output[$entity];
+		} elseif (!empty($conf->anxhr->dir_output)) {
+			$base = $conf->anxhr->dir_output;
+		}
+		if ($base === '' || (int) $period->fk_user <= 0) {
+			return '';
+		}
+		return $base.'/timesheet/'.((int) $period->fk_user).'/'.sprintf('%04d-%02d', (int) $period->year, (int) $period->month);
+	}
+
+	/**
+	 * Return the absolute path of the generated monthly sheet, '' if none.
+	 * Only files inside the period sheet directory are returned (last_main_doc is not trusted blindly).
+	 *
+	 * @return	string
+	 */
+	public function getSheetFile()
+	{
+		$dir = self::getSheetDir($this);
+		if ($dir === '' || !is_dir($dir)) {
+			return '';
+		}
+		if (!empty($this->last_main_doc)) {
+			$file = DOL_DATA_ROOT.'/'.$this->last_main_doc;
+			if (basename($file) !== '' && dirname($file) === $dir && is_file($file)) {
+				return $file;
+			}
+		}
+		include_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
+		$files = dol_dir_list($dir, 'files', 0, '^Monatsblatt_.*\.pdf$', '', 'date', SORT_DESC);
+		return empty($files) ? '' : $files[0]['fullname'];
+	}
+
+	/**
+	 * Build the monthly sheet document (model in core/modules/anxhr/doc/, prefix pdf_).
+	 * CommonObject::commonGenerateDocument() is not used on purpose: it indexes the file into the ECM
+	 * (share links, document.php access) which is not wanted for a personal working time record.
+	 *
+	 * @param	string			$modele			Model name ('monthly_timesheet')
+	 * @param	Translate|null	$outputlangs	Output language (null = company default language)
+	 * @param	int				$hidedetails	1 = hide clock times
+	 * @param	int				$hidedesc		Unused
+	 * @param	int				$hideref		Unused
+	 * @param	array<string,mixed>|null	$moreparams	Unused
+	 * @return	int								<0 if KO, >0 if OK
+	 */
+	public function generateDocument($modele, $outputlangs, $hidedetails = 0, $hidedesc = 0, $hideref = 0, $moreparams = null)
+	{
+		global $langs, $hookmanager, $action;
+
+		$modele = empty($modele) ? getDolGlobalString('ANXHR_TIMESHEET_ADDON_PDF', 'monthly_timesheet') : $modele;
+		if (!preg_match('/^[a-z0-9_]+$/i', $modele)) {
+			$this->error = 'BadValueForParameterModele';
+			return -1;
+		}
+		if (!is_object($outputlangs)) {
+			$outputlangs = $langs;
+			$deflang = getDolGlobalString('MAIN_LANG_DEFAULT');
+			if ($deflang !== '' && $deflang !== 'auto' && is_object($langs) && $langs->defaultlang !== $deflang) {
+				$outputlangs = new Translate('', $GLOBALS['conf']);
+				$outputlangs->setDefaultLang($deflang);
+			}
+		}
+		if (is_object($hookmanager)) {
+			$parameters = array('modelspath' => 'core/modules/anxhr/doc/', 'modele' => $modele, 'outputlangs' => $outputlangs, 'hidedetails' => $hidedetails, 'moreparams' => $moreparams);
+			$reshook = $hookmanager->executeHooks('commonGenerateDocument', $parameters, $this, $action);
+			if (!empty($reshook)) {
+				return $reshook;
+			}
+		}
+		$file = dol_buildpath('/anxhr/core/modules/anxhr/doc/pdf_'.$modele.'.modules.php', 0);
+		if (!file_exists($file)) {
+			$this->error = 'Failed to load doc generator with modele='.$modele;
+			dol_syslog(__METHOD__.' '.$this->error, LOG_ERR);
+			return -1;
+		}
+		require_once $file;
+		$classname = 'pdf_'.$modele;
+		$obj = new $classname($this->db);
+		$sav_charset_output = $outputlangs->charset_output;
+		try {
+			$res = $obj->write_file($this, $outputlangs, '', $hidedetails, $hidedesc, $hideref);
+		} catch (Throwable $e) {
+			$res = 0;
+			$obj->error = $e->getMessage();
+		}
+		$outputlangs->charset_output = $sav_charset_output;
+		if ($res <= 0 || empty($obj->result['fullpath'])) {
+			$this->error = (string) $obj->error;
+			$this->errors = array_merge($this->errors, (array) $obj->errors);
+			dol_syslog(__METHOD__.' error '.$this->error, LOG_ERR);
+			return -1;
+		}
+		$this->model_pdf = $modele;
+		$this->last_main_doc = preg_replace('/^'.preg_quote(DOL_DATA_ROOT.'/', '/').'/', '', $obj->result['fullpath']);
+		$sql = "UPDATE ".$this->db->prefix().$this->table_element." SET last_main_doc = '".$this->db->escape($this->last_main_doc)."'";
+		$sql .= " WHERE rowid = ".((int) $this->id);
+		if (!$this->db->query($sql)) {
+			$this->error = $this->db->lasterror();
+			return -1;
+		}
+		return 1;
 	}
 
 	/**

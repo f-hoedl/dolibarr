@@ -121,6 +121,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		} else {
 			setEventMessages($langs->trans('Error'), null, 'errors');
 		}
+	} elseif ($action == 'massgenerate' && $isadmin) {
+		anxhrTimeMassGenerateSheets($db, $langs, $user, GETPOST('toselect', 'array:int'));
 	} elseif ($action == 'exportcsv' && $canexport) {
 		anxhrTimeExportCsv($db, $langs, $user, $year, $month);
 		exit;
@@ -182,9 +184,22 @@ print '<strong>'.$langs->trans('Month'.sprintf('%02d', $month)).' '.$year.'</str
 print '<a class="butActionSmall" href="'.$_SERVER['PHP_SELF'].'?year='.$next['year'].'&month='.$next['month'].'" title="'.dol_escape_htmltag($langs->trans('Next')).'">'.img_picto('', 'fa-chevron-right').'</a>';
 print '</div>';
 
+if ($isadmin) {
+	// Mass action form (rows refer to it with the form attribute, their own action buttons are separate forms)
+	print '<form method="POST" action="'.$_SERVER['PHP_SELF'].'" id="anxhrmassform">';
+	print '<input type="hidden" name="token" value="'.newToken().'">';
+	print '<input type="hidden" name="action" value="massgenerate">';
+	print '<input type="hidden" name="year" value="'.((int) $year).'"><input type="hidden" name="month" value="'.((int) $month).'">';
+	print '<div class="right marginbottomonly"><input type="submit" class="button smallpaddingimp" value="'.dol_escape_htmltag($langs->trans('AnxhrSheetMassGenerate')).'"></div>';
+	print '</form>';
+}
+$nbcols = ($isadmin ? 11 : 10);
 print '<div class="div-table-responsive">';
 print '<table class="noborder centpercent">';
 print '<tr class="liste_titre">';
+if ($isadmin) {
+	print '<th class="center width25">'.$form->showCheckAddButtons('checkforselect', 1).'</th>';
+}
 print '<th>'.$langs->trans('Employee').'</th>';
 print '<th class="right">'.$langs->trans('AnxhrTarget').'</th>';
 print '<th class="right">'.$langs->trans('AnxhrWorked').'</th>';
@@ -199,6 +214,9 @@ print '</tr>';
 
 if (!$ownFound && $user->hasRight('anxhr', 'time', 'own')) {
 	print '<tr class="oddeven">';
+	if ($isadmin) {
+		print '<td></td>';
+	}
 	print '<td>'.dol_escape_htmltag($user->getFullName($langs)).'</td>';
 	// Cells follow the header columns (some are hidden on phones), the message sits in the status column
 	print '<td></td><td></td><td class="hideonsmartphone"></td><td class="hideonsmartphone"></td><td class="hideonsmartphone"></td><td class="hideonsmartphone"></td><td></td>';
@@ -207,13 +225,16 @@ if (!$ownFound && $user->hasRight('anxhr', 'time', 'own')) {
 	print '</td></tr>';
 }
 if (empty($rows) && ($ownFound || !$user->hasRight('anxhr', 'time', 'own'))) {
-	print '<tr class="oddeven"><td colspan="10"><span class="opacitymedium">'.$langs->trans('NoRecordFound').'</span></td></tr>';
+	print '<tr class="oddeven"><td colspan="'.$nbcols.'"><span class="opacitymedium">'.$langs->trans('NoRecordFound').'</span></td></tr>';
 }
 $tmp = new TimePeriod($db);
 foreach ($rows as $obj) {
 	$tmp->status = (int) $obj->status;
 	$status = (int) $obj->status;
 	print '<tr class="oddeven">';
+	if ($isadmin) {
+		print '<td class="center"><input type="checkbox" class="checkforselect" name="toselect[]" value="'.((int) $obj->rowid).'" form="anxhrmassform" aria-label="'.dolPrintHTMLForAttribute(dolGetFirstLastname($obj->firstname, $obj->lastname) ?: $obj->login).'"></td>';
+	}
 	$link = dol_buildpath('/anxhr/time_day.php', 1).'?id='.((int) $obj->fk_user).'&year='.$year.'&month='.$month;
 	print '<td class="tdoverflowmax200"><a href="'.$link.'">'.dol_escape_htmltag(dolGetFirstLastname($obj->firstname, $obj->lastname) ?: $obj->login).'</a></td>';
 	print '<td class="right">'.anxhrTimeFormatMinutes($obj->target_min).'</td>';
@@ -238,6 +259,8 @@ foreach ($rows as $obj) {
 	if ($isadmin && in_array($status, array(TimePeriod::STATUS_CONFIRMED, TimePeriod::STATUS_APPROVED, TimePeriod::STATUS_EXPORTED), true)) {
 		print anxhrTimePeriodButton('reopen', (int) $obj->rowid, $year, $month, $langs->trans('AnxhrReopen'), true);
 	}
+	// Monthly sheet (AZG paragraph 26), every viewer of the row may get it
+	print '<a class="button smallpaddingimp" href="'.dol_buildpath('/anxhr/time_sheet.php', 1).'?id='.((int) $obj->rowid).'" title="'.dolPrintHTMLForAttribute($langs->trans('AnxhrMonthlySheetPdf')).'">'.img_picto('', 'fa-file-pdf', 'class="pictofixedwidth"').'<span class="hideonsmartphone">'.$langs->trans('AnxhrMonthlySheetPdf').'</span></a>';
 	print '</td>';
 	print '</tr>';
 }
@@ -299,6 +322,42 @@ function anxhrTimePeriodButton($action, $id, $year, $month, $label, $withreason 
 	$out .= '<input type="submit" class="'.$css.'" value="'.dol_escape_htmltag($label).'">';
 	$out .= '</form> ';
 	return $out;
+}
+
+/**
+ * Generate the monthly sheets of the selected periods (time admin) and set the result messages.
+ *
+ * @param	DoliDB		$db		Database handler
+ * @param	Translate	$langs	Language
+ * @param	User		$user	Time admin
+ * @param	int[]		$ids	Period ids
+ * @return	void
+ */
+function anxhrTimeMassGenerateSheets($db, $langs, $user, $ids)
+{
+	$nbok = 0;
+	$nbko = 0;
+	foreach (array_unique(array_map('intval', is_array($ids) ? $ids : array())) as $pid) {
+		$period = new TimePeriod($db);
+		if ($pid <= 0 || $period->fetch($pid) <= 0 || !anxhrTimeCanSeeUser($user, (int) $period->fk_user)) {
+			$nbko++;
+			continue;
+		}
+		if (!in_array((int) $period->status, array(TimePeriod::STATUS_APPROVED, TimePeriod::STATUS_EXPORTED), true)) {
+			$period->recomputeBalances($user);
+		}
+		if ($period->generateDocument('monthly_timesheet', null) > 0) {
+			$nbok++;
+		} else {
+			$nbko++;
+		}
+	}
+	if ($nbok > 0 || $nbko == 0) {
+		setEventMessages($langs->trans('AnxhrSheetMassGenerated', $nbok), null, 'mesgs');
+	}
+	if ($nbko > 0) {
+		setEventMessages($langs->trans('AnxhrSheetMassErrors', $nbko), null, 'errors');
+	}
 }
 
 /**

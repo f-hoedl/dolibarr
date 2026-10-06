@@ -272,8 +272,38 @@ if ($isadmin) {
 	print '<input type="submit" class="butAction" value="'.dol_escape_htmltag($langs->trans('AnxhrRecomputeMonth')).'">';
 	print '</form>';
 }
-print dolGetButtonAction($langs->trans('AnxhrComingSoon'), $langs->trans('AnxhrMonthlySheetPdf'), 'default', '#', '', -1);
+// Monthly sheet of the displayed month (only when the period exists, no creation from this view)
+$sheetPeriodId = anxhrTimeFindPeriodId($db, $id, $year, $month);
+if ($sheetPeriodId > 0) {
+	print dolGetButtonAction('', $langs->trans('AnxhrMonthlySheetPdf'), 'default', dol_buildpath('/anxhr/time_sheet.php', 1).'?id='.$sheetPeriodId, '', 1);
+} else {
+	print dolGetButtonAction($langs->trans('AnxhrSheetNoPeriodYet'), $langs->trans('AnxhrMonthlySheetPdf'), 'default', '#', '', 0);
+}
 print '</div>';
 
 llxFooter();
 $db->close();
+
+
+/**
+ * Return the id of the period of an employee and month, 0 if none.
+ *
+ * @param	DoliDB	$db		Database handler
+ * @param	int		$userid	Employee
+ * @param	int		$year	Year
+ * @param	int		$month	Month
+ * @return	int
+ */
+function anxhrTimeFindPeriodId($db, $userid, $year, $month)
+{
+	$sql = "SELECT rowid FROM ".$db->prefix()."anxhr_time_period";
+	$sql .= " WHERE fk_user = ".((int) $userid)." AND year = ".((int) $year)." AND month = ".((int) $month);
+	$sql .= " AND entity IN (".getEntity('anxhr_time_period').")";
+	$resql = $db->query($sql);
+	if (!$resql) {
+		return 0;
+	}
+	$obj = $db->fetch_object($resql);
+	$db->free($resql);
+	return $obj ? (int) $obj->rowid : 0;
+}

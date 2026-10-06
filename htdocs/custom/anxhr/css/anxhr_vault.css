@@ -1,0 +1,62 @@
+/* ANX HR document vault. Copyright (C) 2026 ANX - GPL v3 or later */
+.anxhr-vault-filters {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px 16px;
+	align-items: flex-end;
+	margin-bottom: 12px;
+}
+.anxhr-vault-filter {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+.anxhr-vault-filter > label {
+	font-size: 0.9em;
+	opacity: 0.8;
+}
+.anxhr-vault-filter-buttons {
+	flex-direction: row;
+	align-items: center;
+}
+.anxhr-vault-cat {
+	font-weight: normal;
+}
+.anxhr-vault-cat-payslip { background-color: #3c6e8f !important; color: #fff !important; }
+.anxhr-vault-cat-contract { background-color: #6b5b95 !important; color: #fff !important; }
+.anxhr-vault-cat-certificate { background-color: #7a6a2e !important; color: #fff !important; }
+.anxhr-vault-cat-timesheet { background-color: #2e7a5a !important; color: #fff !important; }
+.anxhr-vault-cat-sickness_certificate { background-color: #8f3c4c !important; color: #fff !important; }
+.anxhr-vault-empty {
+	padding: 16px 8px;
+	text-align: center;
+	opacity: 0.75;
+}
+.anxhr-vault-empty-big {
+	padding: 40px 8px;
+	font-size: 1.15em;
+}
+.anxhr-vault-group {
+	margin-bottom: 16px;
+}
+.anxhr-vault-doclabel {
+	font-weight: 500;
+}
+.anxhr-vault-new {
+	text-transform: uppercase;
+	font-size: 0.75em;
+}
+.anxhr-vault-forms {
+	margin-top: 24px;
+}
+.anxhr-vault-form .button {
+	margin-top: 8px;
+}
+@media only screen and (max-width: 767px) {
+	.anxhr-vault-filter, .anxhr-vault-filter select, .anxhr-vault-filter input {
+		width: 100%;
+	}
+	.anxhr-vault-dl {
+		padding: 8px 12px !important;
+	}
+}

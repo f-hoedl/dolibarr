@@ -122,6 +122,9 @@ class modAnxhr extends DolibarrModules
 			3 => array('ANXHR_CLOCK_ALLOW_SELF_CORRECTION_SAME_DAY', 'chaine', '0', 'Allow employees to correct own entries on the same day', 0, 'current', 0),
 			4 => array('ANXHR_PERIOD_AUTOCREATE_DAY', 'chaine', '1', 'Day of month on which monthly periods of previous month are created', 0, 'current', 0),
 			5 => array('ANXHR_RETENTION_YEARS', 'chaine', '7', 'Retention in years after end of employment', 0, 'current', 0),
+			6 => array('ANXHR_VAULT_MAX_SIZE_MB', 'chaine', '20', 'Max size in MB of a document of the HR vault', 0, 'current', 0),
+			7 => array('ANXHR_VAULT_ALLOWED_EXT', 'chaine', 'pdf,png,jpg,jpeg,docx,xlsx,txt,csv', 'Allowed file extensions of the HR vault', 0, 'current', 0),
+			8 => array('ANXHR_VAULT_NOTIFY_CATEGORIES', 'chaine', 'payslip', 'Vault categories that fire ANXHR_VAULTDOC_CREATE (notification) when a document visible to the employee is stored', 0, 'current', 0),
 		);
 
 		if (!isModEnabled("anxhr")) {
@@ -293,6 +296,11 @@ class modAnxhr extends DolibarrModules
 		$this->addLeftMenu($r, 'fk_mainmenu=anxhr,fk_leftmenu=anxhr_hr', 'AnxhrMenuDeadlines', 'anxhr_deadlines', '/anxhr/deadline_list.php', '$user->hasRight("anxhr", "deadline", "read")');
 		$this->addLeftMenu($r, 'fk_mainmenu=anxhr,fk_leftmenu=anxhr_hr', 'AnxhrMenuChecklists', 'anxhr_checklists', '/anxhr/checklist_list.php', '$user->hasRight("anxhr", "checklist", "read")');
 		$this->addLeftMenu($r, 'fk_mainmenu=anxhr,fk_leftmenu=anxhr_hr', 'AnxhrMenuHandover', 'anxhr_handovers', '/anxhr/handover_list.php', '$user->hasRight("anxhr", "handover", "read")');
+		// Document vault (HR group) and its access log (audit position, right below)
+		$this->addLeftMenu($r, 'fk_mainmenu=anxhr,fk_leftmenu=anxhr_hr', 'AnxhrMenuVault', 'anxhr_vault', '/anxhr/vault.php', '$user->hasRight("anxhr", "vault", "own") || $user->hasRight("anxhr", "vault", "upload") || $user->hasRight("anxhr", "vault", "admin")');
+		$this->menu[$r - 1]['langs'] = 'anxhr_vault@anxhr';
+		$this->addLeftMenu($r, 'fk_mainmenu=anxhr,fk_leftmenu=anxhr_hr', 'AnxhrMenuVaultLog', 'anxhr_vault_log', '/anxhr/vault_log.php', '$user->hasRight("anxhr", "vault", "admin") || $user->hasRight("anxhr", "audit", "read")');
+		$this->menu[$r - 1]['langs'] = 'anxhr_vault@anxhr';
 
 		// Block 2: time tracking (separate left menu group acts as separator)
 		$this->addLeftMenu($r, 'fk_mainmenu=anxhr', 'AnxhrMenuMyTime', 'anxhr_time', '/anxhr/time_clock.php', $permtime, 'isModEnabled("anxhr")', 'fa-user-clock');
@@ -350,6 +358,8 @@ class modAnxhr extends DolibarrModules
 	 */
 	public function init($options = '')
 	{
+		global $conf;
+
 		// Create tables of module. The path is relative to each entry of $conf->file->dol_document_root,
 		// so '/anxhr/sql/' is found in the 'alt' root that maps htdocs/custom.
 		$result = $this->_load_tables('/anxhr/sql/');
@@ -363,6 +373,13 @@ class modAnxhr extends DolibarrModules
 		// meets only accepted errors (DB_ERROR_KEY_NAME_ALREADY_EXISTS, DB_ERROR_RECORD_ALREADY_EXISTS) which it
 		// ignores without error log: this is idempotent. Remove this method once core runs these files again.
 		$this->loadKeysAndData('/anxhr/sql/');
+
+		// Document vault directory: deny-all .htaccess and empty index.html (defense in depth, documents are
+		// outside the web root anyway and are only served by vault_download.php)
+		dol_include_once('/anxhr/lib/anxhr_vault.lib.php');
+		if (function_exists('anxhrVaultEnsureRootDir')) {
+			anxhrVaultEnsureRootDir(anxhrVaultRootDir((int) $conf->entity));
+		}
 
 		// Permissions
 		$this->remove($options);
