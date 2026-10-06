@@ -80,6 +80,7 @@ class TimeEngine
 		'MAX_WEEKLY_60H' => 'AnxhrViolationMaxWeekly60h',
 		'REST_11H' => 'AnxhrViolationRest11h',
 		'HOLIDAY_WORK' => 'AnxhrViolationHolidayWork',
+		'SUNDAY_WORK' => 'AnxhrViolationSundayWork',
 		'OPEN_ENTRY' => 'AnxhrViolationOpenEntry',
 		'ORDER_INVALID' => 'AnxhrViolationOrderInvalid',
 	);
@@ -243,6 +244,9 @@ class TimeEngine
 		// 7. Work on a public holiday (paragraph 7, 9 ARG) needs justification, reported as warning.
 		if ($isPublicHoliday && $worked > 0) {
 			$violations[] = $this->violation('HOLIDAY_WORK', $worked, self::LEVEL_WARNING);
+		} elseif ($isoWeekday == 7 && $worked > 0) {
+			// Sunday work is only allowed under an exception of the ARG (paragraph 3, 10 ff ARG), reported as info.
+			$violations[] = $this->violation('SUNDAY_WORK', $worked, self::LEVEL_INFO);
 		}
 
 		// 8. Daily rest of 11 hours (paragraph 12 (1) AZG) between previous clock out and first clock in.

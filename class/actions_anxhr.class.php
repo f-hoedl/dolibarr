@@ -61,7 +61,7 @@ class ActionsAnxhr extends CommonHookActions
 	/**
 	 * Notification codes provided by this module
 	 */
-	const NOTIF_CODES = array('ANXHR_DEADLINE_REMIND', 'ANXHR_TIMEPERIOD_APPROVE', 'ANXHR_TIMECORRECTION_APPROVE');
+	const NOTIF_CODES = array('ANXHR_DEADLINE_REMIND', 'ANXHR_TIMEPERIOD_APPROVE', 'ANXHR_TIMECORRECTION_APPROVE', 'ANXHR_VAULTDOC_CREATE');
 
 
 	/**
@@ -244,5 +244,28 @@ class ActionsAnxhr extends CommonHookActions
 		}
 
 		return $exists;
+	}
+
+	/**
+	 * Never let document.php serve files of the HR vault (encrypted files are only served decrypted by vault_download.php).
+	 * The access check of core can only be widened by resArray['accessallowed'], so the path is replaced by a
+	 * non existing one, which makes document.php answer "file does not exist".
+	 *
+	 * @param	array<string,mixed>	$parameters		Hook metadata (modulepart, original_file, ...)
+	 * @param	?CommonObject		$object			Object
+	 * @param	?string				$action			Action
+	 * @param	HookManager			$hookmanager	Hook manager
+	 * @return	int									0 or 1 (1 = resArray used)
+	 */
+	public function checkSecureAccess($parameters, &$object, &$action, $hookmanager)
+	{
+		$this->results = array();
+		$file = isset($parameters['original_file']) ? str_replace('\\', '/', (string) $parameters['original_file']) : '';
+		if (isset($parameters['modulepart']) && $parameters['modulepart'] == 'anxhr' && preg_match('/\/anxhr\/vault(\/|$)/', $file)) {
+			dol_syslog('ActionsAnxhr::checkSecureAccess access to vault file through document.php refused', LOG_WARNING);
+			$this->results = array('original_file' => DOL_DATA_ROOT.'/anxhr/vault_access_refused_'.bin2hex(random_bytes(8)));
+			return 1;
+		}
+		return 0;
 	}
 }

@@ -290,6 +290,49 @@ class CronjobsAnxhr
 			}
 			$messages[] = $table.': '.((int) $this->db->affected_rows($resql));
 		}
+
+		// HR document vault: delete encrypted files and records of employees who left before the cutoff.
+		// The access log rows are kept (they reference only ids).
+		if (anxhrTableExists($this->db, 'anxhr_vault_doc')) {
+			dol_include_once('/anxhr/lib/anxhr_vault.lib.php');
+			require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
+			$sql = "SELECT d.rowid, d.entity, d.fk_user, d.filename_stored FROM ".$this->db->prefix()."anxhr_vault_doc as d";
+			$sql .= " WHERE d.entity IN (".getEntity('anxhr_vaultdoc').")";
+			$sql .= " AND d.fk_user IN (".$subsql.")";
+			$sql .= $this->db->plimit(10000);
+			$resql = $this->db->query($sql);
+			if (!$resql) {
+				$this->error = $this->db->lasterror();
+				$this->output = $this->error;
+				$this->db->rollback();
+				dol_syslog(__METHOD__.' '.$this->error, LOG_ERR);
+				return -1;
+			}
+			$vaultids = array();
+			$nbfiles = 0;
+			while ($obj = $this->db->fetch_object($resql)) {
+				$vaultids[] = (int) $obj->rowid;
+				if (anxhrVaultIsValidStoredName($obj->filename_stored)) {
+					$path = anxhrVaultRootDir((int) $obj->entity).'/'.((int) $obj->fk_user).'/'.$obj->filename_stored;
+					if (file_exists($path) && dol_delete_file($path, 1, 1, 1, null, false, 0)) {
+						$nbfiles++;
+					}
+				}
+			}
+			$this->db->free($resql);
+			if (!empty($vaultids)) {
+				$sql = "DELETE FROM ".$this->db->prefix()."anxhr_vault_doc WHERE rowid IN (".$this->db->sanitize(implode(',', $vaultids)).")";
+				if (!$this->db->query($sql)) {
+					$this->error = $this->db->lasterror();
+					$this->output = $this->error;
+					$this->db->rollback();
+					dol_syslog(__METHOD__.' '.$this->error, LOG_ERR);
+					return -1;
+				}
+			}
+			$messages[] = 'anxhr_vault_doc: '.count($vaultids).' (files: '.$nbfiles.')';
+			dol_syslog(__METHOD__.' vault purge: '.count($vaultids).' documents, '.$nbfiles.' files', LOG_INFO);
+		}
 		$this->db->commit();
 
 		$this->output = 'Cutoff '.dol_print_date($cutoff, 'day').' - deleted '.(empty($messages) ? '0' : implode(', ', $messages));

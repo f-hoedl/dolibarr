@@ -68,7 +68,7 @@ require_once DOL_DOCUMENT_ROOT.'/user/class/user.class.php';
 dol_include_once('/anxhr/lib/anxhr.lib.php');
 
 // Load translation files required by the page
-$langs->loadLangs(array("anxhr@anxhr", "anxhr_hr@anxhr", "users", "companies"));
+$langs->loadLangs(array("anxhr@anxhr", "anxhr_hr@anxhr", "anxhr_vault@anxhr", "users", "companies"));
 
 // Parameters
 $id = GETPOSTINT('id');
@@ -101,6 +101,8 @@ $canreadhandover = ($user->hasRight('anxhr', 'handover', 'read') || $isself);
 $canreadchecklist = ($user->hasRight('anxhr', 'checklist', 'read') || $isself);
 $canreadtime = (($isself && $user->hasRight('anxhr', 'time', 'own')) || $user->hasRight('anxhr', 'time', 'admin')
 	|| ($user->hasRight('anxhr', 'time', 'approve') && in_array((int) $object->id, anxhrGetSubordinateIds($user))));
+// Document vault: own documents (right vault/own) or HR (vault/admin). Supervisors never.
+$canreadvault = (($isself && $user->hasRight('anxhr', 'vault', 'own')) || $user->hasRight('anxhr', 'vault', 'admin'));
 
 $hookmanager->initHooks(array('anxhrusertab', 'globalcard'));
 
@@ -301,6 +303,30 @@ if ($canreadtime && anxhrTableExists($db, 'anxhr_time_day')) {
 	$resql = $db->query($sql);
 	if ($resql) {
 		$timemonth = $db->fetch_object($resql);
+		$db->free($resql);
+	}
+}
+
+// Vault documents: count per category (one query)
+$vaultcounts = array();
+$vaultunread = 0;
+if ($canreadvault && anxhrTableExists($db, 'anxhr_vault_doc')) {
+	dol_include_once('/anxhr/lib/anxhr_vault.lib.php');
+	$sql = "SELECT vd.category, COUNT(vd.rowid) as nb, SUM(CASE WHEN vd.first_viewed_at IS NULL AND vd.visible_to_employee = 1 THEN 1 ELSE 0 END) as nbunread";
+	$sql .= " FROM ".$db->prefix()."anxhr_vault_doc as vd";
+	$sql .= " WHERE vd.fk_user = ".((int) $object->id);
+	$sql .= " AND vd.entity IN (".getEntity('anxhr_vaultdoc').")";
+	$sql .= " AND vd.status = 1";
+	if (!$user->hasRight('anxhr', 'vault', 'admin')) {
+		$sql .= " AND vd.visible_to_employee = 1";
+	}
+	$sql .= " GROUP BY vd.category";
+	$resql = $db->query($sql);
+	if ($resql) {
+		while ($obj = $db->fetch_object($resql)) {
+			$vaultcounts[$obj->category] = (int) $obj->nb;
+			$vaultunread += (int) $obj->nbunread;
+		}
 		$db->free($resql);
 	}
 }
@@ -552,6 +578,30 @@ if ($canreadtime) {
 		anxhrTabRow($langs->trans('AnxhrTarget'), anxhrFormatMinutes($target));
 		anxhrTabRow($langs->trans('AnxhrBalance'), '<span class="'.($diff < 0 ? 'anxhr-negative' : 'anxhr-positive').'">'.($diff > 0 ? '+' : '').anxhrFormatMinutes($diff).'</span>');
 		anxhrTabRow($langs->trans('AnxhrProgress'), anxhrProgressBar($target > 0 ? (int) floor(100 * $worked / $target) : 0));
+	}
+	print '</table>';
+	print '</div>';
+	print '<br>';
+}
+
+// Documents (vault)
+if ($canreadvault) {
+	$vaulturl = dol_buildpath('/anxhr/vault.php', 1).($user->hasRight('anxhr', 'vault', 'admin') ? '?search_fk_user='.((int) $object->id) : '');
+	$more = '<a href="'.$vaulturl.'">'.$langs->trans('AnxhrVaultOpen').'</a>';
+	print '<div class="div-table-responsive-no-min">';
+	print '<table class="noborder centpercent">';
+	anxhrTabBlockTitle($langs->trans('AnxhrVaultTabDocuments'), 'fa-shield-alt', $more);
+	if (empty($vaultcounts)) {
+		print '<tr class="oddeven"><td colspan="2"><span class="opacitymedium">'.$langs->trans('AnxhrVaultNoDocuments').'</span></td></tr>';
+	}
+	foreach (anxhrVaultCategories() as $code => $def) {
+		if (empty($vaultcounts[$code])) {
+			continue;
+		}
+		print '<tr class="oddeven"><td>'.anxhrVaultCategoryBadge($code, $langs).'</td><td class="right"><a href="'.$vaulturl.($user->hasRight('anxhr', 'vault', 'admin') ? '&search_category='.urlencode($code) : '').'">'.((int) $vaultcounts[$code]).'</a></td></tr>';
+	}
+	if ($vaultunread > 0) {
+		print '<tr class="oddeven"><td colspan="2"><span class="badge badge-status1">'.img_picto('', 'fa-envelope', 'class="pictofixedwidth"').$langs->trans('AnxhrVaultUnreadCount', $vaultunread).'</span></td></tr>';
 	}
 	print '</table>';
 	print '</div>';

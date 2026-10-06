@@ -234,6 +234,8 @@ class TimeEngineTest extends TestCase
 		$r = $this->compute(array('day' => '2026-03-08', 'entries' => $this->entries('2026-03-08', $this->std8h())));
 		$this->assertSame(0, $r['target_min']);
 		$this->assertSame(480, $r['overtime100_min']);
+		$this->assertContains('SUNDAY_WORK', array_column($r['violations'], 'code'));
+		$this->assertNotContains('HOLIDAY_WORK', array_column($r['violations'], 'code'));
 		$this->assertSame(0, $r['overtime50_min']);
 		$this->assertNotContains('HOLIDAY_WORK', $this->codes($r));
 	}
