@@ -30,14 +30,14 @@ AnxhrHrFile = HR file
 AnxhrMenuHR = HR
 AnxhrMenuCockpit = Cockpit
 AnxhrMenuEmployees = Employees
-AnxhrMenuContracts = Contracts
+AnxhrMenuContracts = Employment contracts
 AnxhrMenuDeadlines = Deadlines
 AnxhrMenuChecklists = Checklists
-AnxhrMenuHandover = Equipment and access
-AnxhrMenuMyTime = My time
-AnxhrMenuTimeDays = Time days
+AnxhrMenuHandover = Handovers
+AnxhrMenuMyTime = Time tracking
+AnxhrMenuTimeDays = Month view
 AnxhrMenuCorrections = Corrections
-AnxhrMenuMonthlyPeriods = Monthly periods
+AnxhrMenuMonthlyPeriods = Monthly closing
 AnxhrMenuLeaveRequests = Leave requests
 AnxhrMenuExpenseReports = Expense reports
 
@@ -106,11 +106,11 @@ Remind_days = Reminder days
 #
 AnxhrDeadlineReminders = ANX HR - Send deadline reminders
 AnxhrComputeTimeDays = ANX HR - Compute time days
-AnxhrCreateMonthlyPeriods = ANX HR - Create monthly time periods
+AnxhrCreateMonthlyPeriods = ANX HR - Create monthly closings
 AnxhrRetentionCleanup = ANX HR - Delete expired time records
 AnxhrCronDeadlineRemindersComment = Creates agenda events and sends notifications for HR deadlines that are due
 AnxhrCronComputeTimeDaysComment = Recomputes the daily time balance of the previous day
-AnxhrCronCreateMonthlyPeriodsComment = Creates the monthly time periods of the previous month on the configured day
+AnxhrCronCreateMonthlyPeriodsComment = Creates the monthly closings of the previous month on the configured day
 AnxhrCronRetentionCleanupComment = Deletes time records of former employees after the retention period
 AnxhrCronNoReminder = No reminder to send today
 AnxhrCronRemindersSent = %s reminder(s) sent
@@ -121,8 +121,8 @@ AnxhrDeadlineReminderNote = Due on %s, in %s day(s).
 # Notifications
 #
 Notify_ANXHR_DEADLINE_REMIND = HR deadline reminder
-Notify_ANXHR_TIMEPERIOD_APPROVE = Monthly time period approved
-Notify_ANXHR_TIMECORRECTION_APPROVE = Time correction approved
+Notify_ANXHR_TIMEPERIOD_APPROVE = Monthly closing approved
+Notify_ANXHR_TIMECORRECTION_APPROVE = Correction approved
 
 #
 # Clock widget
@@ -139,8 +139,8 @@ AnxhrCockpit = HR cockpit
 AnxhrCockpitWelcome = Welcome to the HR area. Use the menu on the left to access your time records and requests.
 AnxhrKpiDeadlines30 = Deadlines within 30 days
 AnxhrKpiChecklistsInProgress = Checklists in progress
-AnxhrKpiOpenCorrections = Open time corrections
-AnxhrKpiPeriodsToApprove = Monthly periods to approve
+AnxhrKpiOpenCorrections = Open corrections
+AnxhrKpiPeriodsToApprove = Monthly closings to approve
 AnxhrKpiMissingClockOut = Missing clock-out yesterday
 AnxhrMySpace = My space
 AnxhrMyHrFile = My HR file
@@ -156,7 +156,7 @@ AnxhrInNbDays = in %s day(s)
 # HR tab on user card
 #
 AnxhrContract = Employment contract
-AnxhrNewContract = New contract
+AnxhrNewContract = New employment contract
 AnxhrNoContract = No employment contract recorded
 AnxhrOpenEnded = open-ended
 AnxhrEmploymentPeriod = Employment period
@@ -184,9 +184,9 @@ AnxhrRelation = Relationship
 AnxhrNoEmergencyContact = No emergency contact recorded
 AnxhrDeleteEmergencyContact = Delete emergency contact
 AnxhrConfirmDeleteEmergencyContact = Are you sure you want to delete this emergency contact?
-AnxhrEquipmentAndAccess = Equipment and access
+AnxhrEquipmentAndAccess = Handovers (equipment and access)
 AnxhrNewHandover = New handover
-AnxhrNoOpenHandover = No equipment or access handed over
+AnxhrNoOpenHandover = No open handover
 AnxhrHandoverCatHardware = Hardware
 AnxhrHandoverCatKey = Key
 AnxhrHandoverCatToken = Token or badge
@@ -222,3 +222,10 @@ AnxhrViolationHolidayWork = Work on a public holiday or Sunday
 AnxhrViolationOpenEntry = Open entry (clock-out missing)
 AnxhrViolationOrderInvalid = Invalid order of time entries
 AnxhrViolationMaxWeekly60h = Maximum weekly working time of 60 hours exceeded
+
+#
+# UX review
+#
+AnxhrShowAllDeadlines = All deadlines
+AnxhrKpiShowList = Show list
+AnxhrNoMissingClockOut = Nobody forgot to clock out yesterday

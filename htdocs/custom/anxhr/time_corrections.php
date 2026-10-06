@@ -53,7 +53,7 @@ require_once __DIR__.'/lib/anxhr_time.lib.php';
  * @var User $user
  */
 
-$langs->loadLangs(array('anxhr@anxhr', 'anxhr_time@anxhr'));
+$langs->loadLangs(array('anxhr@anxhr', 'anxhr_time@anxhr', 'hrm'));
 
 $action = GETPOST('action', 'aZ09');
 $id = GETPOSTINT('id');
@@ -232,18 +232,20 @@ if ($action == 'create' && $cancreatefor) {
 		$selType = $c ? $c['type'] : '';
 		$selTime = $c ? dol_print_date($c['ts'], '%H:%M', 'tzserver') : '';
 		$isNext = ($c && TimeEntry::timestampToDay($c['ts']) !== $day);
+		// Each input gets an accessible name (row number + column), as the visible label is only the column header
+		$rowlabel = $langs->transnoentitiesnoconv('AnxhrEntryTypeNth', $i + 1);
 		print '<tr class="oddeven anxhr-correction-row">';
-		print '<td>'.$form->selectarray('type_'.$i, $typeoptions, $selType, 1, 0, 0, '', 0, 0, 0, '', 'minwidth150').'</td>';
-		print '<td><input type="time" name="time_'.$i.'" value="'.dol_escape_htmltag($selTime).'" step="60"></td>';
-		print '<td class="center"><input type="checkbox" name="nextday_'.$i.'" value="1"'.($isNext ? ' checked' : '').'></td>';
-		print '<td class="center"><input type="checkbox" name="homeoffice_'.$i.'" value="1"'.(($c && $c['homeoffice']) ? ' checked' : '').'></td>';
+		print '<td>'.$form->selectarray('type_'.$i, $typeoptions, $selType, 1, 0, 0, 'aria-label="'.dolPrintHTMLForAttribute($rowlabel.' - '.$langs->transnoentitiesnoconv('AnxhrEntryType')).'"', 0, 0, 0, '', 'minwidth150').'</td>';
+		print '<td><input type="time" name="time_'.$i.'" value="'.dol_escape_htmltag($selTime).'" step="60" aria-label="'.dolPrintHTMLForAttribute($rowlabel.' - '.$langs->transnoentitiesnoconv('AnxhrEntryTime')).'"></td>';
+		print '<td class="center"><input type="checkbox" name="nextday_'.$i.'" value="1"'.($isNext ? ' checked' : '').' aria-label="'.dolPrintHTMLForAttribute($rowlabel.' - '.$langs->transnoentitiesnoconv('AnxhrNextDay')).'"></td>';
+		print '<td class="center"><input type="checkbox" name="homeoffice_'.$i.'" value="1"'.(($c && $c['homeoffice']) ? ' checked' : '').' aria-label="'.dolPrintHTMLForAttribute($rowlabel.' - '.$langs->transnoentitiesnoconv('AnxhrHomeoffice')).'"></td>';
 		print '</tr>';
 	}
 	print '</table>';
 	print '</div>';
 
 	print '<table class="border centpercent tableforfield">';
-	print '<tr><td class="titlefield fieldrequired">'.$langs->trans('AnxhrReason').'</td><td><textarea name="reason" class="quatrevingtpercent" rows="3">'.dol_escape_htmltag(GETPOST('reason', 'alphanohtml')).'</textarea></td></tr>';
+	print '<tr><td class="titlefield fieldrequired"><label for="reason">'.$langs->trans('AnxhrReason').'</label></td><td><textarea id="reason" name="reason" class="quatrevingtpercent" rows="3" aria-required="true">'.dol_escape_htmltag(GETPOST('reason', 'alphanohtml')).'</textarea></td></tr>';
 	print '</table>';
 
 	print dol_get_fiche_end();

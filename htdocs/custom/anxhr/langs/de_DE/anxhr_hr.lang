@@ -7,15 +7,15 @@
 #
 AnxhrEmployee = Mitarbeiter:in
 AnxhrContracts = Dienstverträge
-AnxhrDeadline = HR-Frist
-AnxhrDeadlines = HR-Fristen
+AnxhrDeadline = Frist
+AnxhrDeadlines = Fristen
 AnxhrEmergencyContact = Notfallkontakt
 AnxhrHandover = Übergabe
-AnxhrHandovers = Übergaben (Geräte, Schlüssel, Zugänge)
+AnxhrHandovers = Übergaben
 AnxhrChecklist = Checkliste
 AnxhrChecklistItems = Checklistenpunkte
 AnxhrChecklistTemplate = Checklistenvorlage
-AnxhrNewDeadline = Neue HR-Frist
+AnxhrNewDeadline = Neue Frist
 AnxhrNewChecklist = Neue Checkliste
 
 #
@@ -71,15 +71,15 @@ AnxhrDisabilityStatus = Behinderungsstatus
 AnxhrDisabilityStatusHelp = Besondere Kategorie personenbezogener Daten (Art. 9 DSGVO), verschlüsselt gespeichert und nur für HR sichtbar. Beispiel: begünstigt behindert, gültig bis.
 AnxhrDisabilityStatusTooLong = Der Text zum Behinderungsstatus ist zu lang (maximal ca. 100 Zeichen)
 AnxhrPeriod = Zeitraum
-AnxhrContractHistory = Vertragsverlauf der Mitarbeiterin bzw. des Mitarbeiters
-AnxhrDeleteContract = Vertrag löschen
-AnxhrConfirmDeleteContract = Wollen Sie diesen Vertrag samt Fristen wirklich löschen?
+AnxhrContractHistory = Vertragsverlauf
+AnxhrDeleteContract = Dienstvertrag löschen
+AnxhrConfirmDeleteContract = Wollen Sie diesen Dienstvertrag samt Fristen wirklich löschen?
 AnxhrActivateContract = Aktivieren
-AnxhrConfirmActivateContract = Vertrag %s aktivieren? Ältere aktive Verträge werden beendet, Fristen angelegt und die Benutzerkarte aktualisiert.
-AnxhrContractActivated = Vertrag aktiviert
-AnxhrEndContract = Vertrag beenden
-AnxhrConfirmEndContract = Vertrag %s mit folgendem Datum beenden?
-AnxhrContractEnded = Vertrag beendet
+AnxhrConfirmActivateContract = Dienstvertrag %s aktivieren? Ältere aktive Dienstverträge werden beendet, Fristen angelegt und die Benutzerkarte aktualisiert.
+AnxhrContractActivated = Dienstvertrag aktiviert
+AnxhrEndContract = Dienstvertrag beenden
+AnxhrConfirmEndContract = Dienstvertrag %s mit folgendem Datum beenden?
+AnxhrContractEnded = Dienstvertrag beendet
 AnxhrContractsAutoEnded = Folgende frühere Verträge wurden automatisch beendet (Ende = Tag vor dem neuen Beginn): %s
 AnxhrNewVersion = Neue Version
 AnxhrNewVersionHelp = Neue Vertragsversion anlegen (zum Beispiel Stundenänderung oder Verlängerung). Der aktuelle Vertrag endet automatisch am Tag vor dem neuen Beginn.
@@ -124,11 +124,11 @@ AnxhrDateOut = Ausgegeben am
 AnxhrDateReturn = Zurückgegeben am
 AnxhrConditionOut = Zustand bei Ausgabe
 AnxhrConditionReturn = Zustand bei Rückgabe
-AnxhrSetReturned = Zurückgegeben
-AnxhrSetRevoked = Entzogen
+AnxhrSetReturned = Rückgabe erfassen
+AnxhrSetRevoked = Zugang entziehen
 AnxhrConfirmSetReturned = Rückgabe von %s erfassen?
 AnxhrHandoverReturned = Rückgabe erfasst
-AnxhrSetLost = Verloren
+AnxhrSetLost = Als verloren melden
 AnxhrConfirmSetLost = %s als verloren markieren?
 AnxhrConfirmReopenHandover = %s wieder auf ausgegeben setzen?
 AnxhrDeleteHandover = Übergabe löschen
@@ -148,7 +148,7 @@ AnxhrRoleSupervisor = Führungskraft
 AnxhrRoleEmployee = Mitarbeiter:in
 AnxhrDateDone = Erledigt am
 AnxhrDoneBy = Erledigt von
-AnxhrItemDone = Erledigt
+AnxhrItemDone = Erledigen
 AnxhrItemSkip = Überspringen
 AnxhrCreateHandover = Übergabe erfassen
 AnxhrAddItem = Punkt hinzufügen
@@ -177,3 +177,9 @@ AnxhrConfirmDeleteChecklistTemplate = Vorlage %s samt allen Punkten löschen? Be
 # Listen
 #
 AnxhrExportCsvHelp = Gefilterte Liste mit den gewählten Spalten als CSV-Datei exportieren
+
+#
+# UX review
+#
+AnxhrCancelChecklist = Checkliste stornieren
+AnxhrCancelDeadline = Frist stornieren

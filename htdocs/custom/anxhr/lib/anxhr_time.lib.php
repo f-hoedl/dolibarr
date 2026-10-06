@@ -150,6 +150,7 @@ function anxhrViolationBadges(array $violations, $langs, $showinfo = 1)
 	$rank = array('info' => 1, 'warning' => 2, 'error' => 3);
 	$worst = 0;
 	$lines = array();
+	$plain = array();
 	$nb = 0;
 	foreach ($violations as $v) {
 		if (!is_array($v)) {
@@ -161,6 +162,7 @@ function anxhrViolationBadges(array $violations, $langs, $showinfo = 1)
 			$nb++;
 		}
 		$lines[] = '<span class="anxhr-viol-'.$level.'">'.dol_escape_htmltag(anxhrViolationMessage($v, $langs)).'</span>';
+		$plain[] = anxhrViolationMessage($v, $langs);
 	}
 	if ($worst <= 1 && !$showinfo) {
 		return '';
@@ -168,7 +170,9 @@ function anxhrViolationBadges(array $violations, $langs, $showinfo = 1)
 	$type = ($worst >= 3 ? 'danger' : ($worst == 2 ? 'warning' : 'info'));
 	$label = ($nb > 0 ? $nb : 'i');
 	$tooltip = '<b>'.dol_escape_htmltag($langs->trans('AnxhrViolations')).'</b><br>'.implode('<br>', $lines);
-	return '<span class="classfortooltip badge badge-'.$type.' anxhr-viol-badge" title="'.dolPrintHTMLForAttribute($tooltip).'">'.$label.'</span>';
+	// The aria-label gives the full text to screen readers (badge color and count are not the only signal)
+	$arialabel = $langs->transnoentitiesnoconv('AnxhrViolations').': '.implode('; ', $plain);
+	return '<span class="classfortooltip badge badge-'.$type.' anxhr-viol-badge" role="img" tabindex="0" aria-label="'.dolPrintHTMLForAttribute($arialabel).'" title="'.dolPrintHTMLForAttribute($tooltip).'">'.$label.'</span>';
 }
 
 /**

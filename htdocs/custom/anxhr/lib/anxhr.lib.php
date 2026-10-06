@@ -169,7 +169,7 @@ function anxhrProgressBar($pct)
 	$pct = max(0, min(100, (int) $pct));
 	$cls = ($pct >= 100 ? ' anxhr-progress-done' : '');
 
-	return '<div class="anxhr-progress'.$cls.'" title="'.$pct.' %"><div class="anxhr-progress-bar" style="width: '.$pct.'%"></div></div>';
+	return '<div class="anxhr-progress'.$cls.'" title="'.$pct.' %" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'.$pct.'"><div class="anxhr-progress-bar" style="width: '.$pct.'%"></div></div>';
 }
 
 /**
@@ -187,6 +187,9 @@ function anxhrDueBadge($datedue, $now)
 	if ($days < 0) {
 		$type = 'danger';
 		$label = $langs->trans('AnxhrOverdue');
+	} elseif ($days == 0) {
+		$type = 'warning';
+		$label = $langs->trans('Today');
 	} elseif ($days <= 7) {
 		$type = 'warning';
 		$label = $langs->trans('AnxhrInNbDays', $days);

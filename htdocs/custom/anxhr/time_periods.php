@@ -53,7 +53,7 @@ require_once __DIR__.'/lib/anxhr_time.lib.php';
  * @var User $user
  */
 
-$langs->loadLangs(array('anxhr@anxhr', 'anxhr_time@anxhr'));
+$langs->loadLangs(array('anxhr@anxhr', 'anxhr_time@anxhr', 'hrm'));
 
 $action = GETPOST('action', 'aZ09');
 $id = GETPOSTINT('id');
@@ -200,8 +200,9 @@ print '</tr>';
 if (!$ownFound && $user->hasRight('anxhr', 'time', 'own')) {
 	print '<tr class="oddeven">';
 	print '<td>'.dol_escape_htmltag($user->getFullName($langs)).'</td>';
-	print '<td colspan="7" class="opacitymedium">'.$langs->trans('AnxhrPeriodNotCreatedYet').'</td>';
-	print '<td></td><td class="right">';
+	// Cells follow the header columns (some are hidden on phones), the message sits in the status column
+	print '<td></td><td></td><td class="hideonsmartphone"></td><td class="hideonsmartphone"></td><td class="hideonsmartphone"></td><td class="hideonsmartphone"></td><td></td>';
+	print '<td class="center opacitymedium">'.$langs->trans('AnxhrPeriodNotCreatedYet').'</td><td class="right anxhr-period-actions">';
 	print anxhrTimePeriodButton('confirmown', 0, $year, $month, $langs->trans('AnxhrConfirmMonth'));
 	print '</td></tr>';
 }
@@ -223,7 +224,7 @@ foreach ($rows as $obj) {
 	print '<td class="right hideonsmartphone">'.anxhrTimeBalanceHtml($obj->balance_start_min).'</td>';
 	print '<td class="right">'.anxhrTimeBalanceHtml($obj->balance_end_min).'</td>';
 	print '<td class="center">'.$tmp->getLibStatut(5).'</td>';
-	print '<td class="right nowraponall">';
+	print '<td class="right anxhr-period-actions">';
 	$isowner = ((int) $obj->fk_user === (int) $user->id);
 	if (in_array($status, array(TimePeriod::STATUS_OPEN, TimePeriod::STATUS_REOPENED), true) && ($isowner || $isadmin)) {
 		print anxhrTimePeriodButton('confirm', (int) $obj->rowid, $year, $month, $langs->trans('AnxhrConfirmMonth'));
@@ -282,7 +283,7 @@ function anxhrTimePeriodButton($action, $id, $year, $month, $label, $withreason 
 		$out .= '<input type="hidden" name="id" value="'.((int) $id).'">';
 	}
 	if ($withreason) {
-		$out .= '<input type="text" name="reason" class="maxwidth150" required placeholder="'.dol_escape_htmltag($langs->trans('AnxhrReason')).'"> ';
+		$out .= '<input type="text" name="reason" class="maxwidth150" required placeholder="'.dol_escape_htmltag($langs->trans('AnxhrReason')).'" aria-label="'.dol_escape_htmltag($langs->trans('AnxhrReason')).'"> ';
 	}
 	$out .= '<input type="submit" class="'.$css.'" value="'.dol_escape_htmltag($label).'">';
 	$out .= '</form> ';

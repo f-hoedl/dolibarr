@@ -53,7 +53,7 @@ require_once __DIR__.'/lib/anxhr_time.lib.php';
  * @var User $user
  */
 
-$langs->loadLangs(array('anxhr@anxhr', 'anxhr_time@anxhr'));
+$langs->loadLangs(array('anxhr@anxhr', 'anxhr_time@anxhr', 'hrm'));
 
 $action = GETPOST('action', 'aZ09');
 $id = GETPOSTINT('id') > 0 ? GETPOSTINT('id') : (int) $user->id;
@@ -140,6 +140,7 @@ $visible = anxhrTimeVisibleUserIds($user);
 if ($visible === null || count($visible) > 1) {
 	print '<form method="GET" action="'.$_SERVER['PHP_SELF'].'" class="inline-block">';
 	print '<input type="hidden" name="year" value="'.$year.'"><input type="hidden" name="month" value="'.$month.'">';
+	print '<label for="id" class="hideonsmartphone marginrightonly">'.$langs->trans('Employee').'</label>';
 	print $form->select_dolusers($id, 'id', 0, null, 0, ($visible === null ? '' : $visible), '', '0', 0, 0, '', 0, '', 'minwidth200 maxwidth300');
 	print ' <input type="submit" class="button smallpaddingimp" value="'.dol_escape_htmltag($langs->trans('Show')).'">';
 	print '</form>';
@@ -158,7 +159,7 @@ print '<th class="right">'.$langs->trans('AnxhrDiff').'</th>';
 print '<th class="right hideonsmartphone">'.$langs->trans('AnxhrOvertime50Short').'</th>';
 print '<th class="right hideonsmartphone">'.$langs->trans('AnxhrOvertime100Short').'</th>';
 print '<th class="center">'.$langs->trans('AnxhrAbsence').'</th>';
-print '<th class="center">'.$langs->trans('AnxhrViolations').'</th>';
+print '<th class="center" title="'.dolPrintHTMLForAttribute($langs->trans('AnxhrViolations')).'">'.img_picto('', 'fa-exclamation-triangle', 'class="pictofixedwidth opacitymedium"').'<span class="hideonsmartphone">'.$langs->trans('AnxhrViolations').'</span></th>';
 print '<th></th>';
 print '</tr>';
 
@@ -194,7 +195,11 @@ for ($d = 1; $d <= $nbdays; $d++) {
 		print '<td class="center">'.($row['absence_code'] ? '<span class="badge badge-secondary">'.anxhrTimeAbsenceLabel($row['absence_code'], $langs).'</span>' : '').'</td>';
 		print '<td class="center">'.anxhrViolationBadges($row['violations'], $langs).(!empty($row['locked']) ? ' '.img_picto($langs->trans('AnxhrLocked'), 'fa-lock', 'class="opacitymedium"') : '').'</td>';
 	} else {
-		print '<td colspan="8" class="opacitymedium center">'.($day > $today ? '' : '-').'</td>';
+		// One cell per column (same responsive classes as the header) so the dash is aligned and phones do not shift columns
+		$empty = ($day > $today ? '' : '-');
+		print '<td class="right opacitymedium">'.$empty.'</td><td class="right opacitymedium hideonsmartphone">'.$empty.'</td>';
+		print '<td class="right opacitymedium">'.$empty.'</td><td class="right opacitymedium">'.$empty.'</td>';
+		print '<td class="hideonsmartphone"></td><td class="hideonsmartphone"></td><td></td><td></td>';
 	}
 	print '<td class="right nowraponall">';
 	if ($cancorrect && $day <= $today && (!$row || empty($row['locked']))) {

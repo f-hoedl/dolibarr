@@ -259,7 +259,7 @@ if ($object->id > 0 && $action != 'create') {
 		$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"].'?id='.$object->id.'&lineid='.$currentitem->id, $langs->trans('DeleteLine'), $langs->trans('ConfirmDeleteLine'), 'confirm_deleteitem', '', 0, 1);
 	}
 	if ($action == 'cancelchecklist') {
-		$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"].'?id='.$object->id, $langs->trans('Cancel'), $langs->trans('AnxhrConfirmCancelChecklist', $object->ref), 'confirm_cancelchecklist', '', 0, 1);
+		$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"].'?id='.$object->id, $langs->trans('AnxhrCancelChecklist'), $langs->trans('AnxhrConfirmCancelChecklist', $object->ref), 'confirm_cancelchecklist', '', 0, 1);
 	}
 	if ($action == 'reopenchecklist') {
 		$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"].'?id='.$object->id, $langs->trans('ReOpen'), $langs->trans('AnxhrConfirmReopenChecklist', $object->ref), 'confirm_reopenchecklist', '', 'yes', 1);
@@ -308,7 +308,12 @@ if ($object->id > 0 && $action != 'create') {
 		print '<div class="underbanner clearboth"></div>';
 		print '<table class="border centpercent tableforfield">'."\n";
 		$keyforbreak = 'anchor_date';
+		// Progress is shown as a bar in the banner: display the field with a percent unit instead of a raw number
+		$object->fields['progress_pct']['type'] = 'varchar(8)';
+		$progressraw = $object->progress_pct;
+		$object->progress_pct = ((int) $progressraw).' %';
 		include DOL_DOCUMENT_ROOT.'/core/tpl/commonfields_view.tpl.php';
+		$object->progress_pct = $progressraw;
 		include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_view.tpl.php';
 		print '</table>';
 		print '</div>';
@@ -340,7 +345,10 @@ if ($object->id > 0 && $action != 'create') {
 		}
 
 		$itemstatic = new HrChecklistItem($db);
-		$roles = $itemstatic->fields['responsible_role']['arrayofkeyval'];
+		$roles = array();
+		foreach ($itemstatic->fields['responsible_role']['arrayofkeyval'] as $rolekey => $rolelabel) {
+			$roles[$rolekey] = $langs->trans($rolelabel);
+		}
 		$caneditlist = ($object->status != HrChecklist::STATUS_CANCELED);
 
 		print load_fiche_titre($langs->trans('AnxhrChecklistItems'), '', 'fa-tasks');
@@ -352,7 +360,7 @@ if ($object->id > 0 && $action != 'create') {
 		print '<th class="hideonsmartphone">'.$langs->trans('AnxhrResponsible').'</th>';
 		print '<th class="center">'.$langs->trans('AnxhrDateDue').'</th>';
 		print '<th class="center hideonsmartphone">'.$langs->trans('AnxhrDateDone').'</th>';
-		print '<th class="right">'.$langs->trans('Action').'</th>';
+		print '<th class="right"></th>';
 		print '</tr>';
 
 		if (empty($object->lines)) {
@@ -409,7 +417,7 @@ if ($object->id > 0 && $action != 'create') {
 				}
 			}
 			if ($permissiontoadd) {
-				print '<a class="reposition marginleftonly" href="'.$_SERVER['PHP_SELF'].'?id='.((int) $object->id).'&lineid='.((int) $line->id).'&action=deleteitem&token='.newToken().'">'.img_delete().'</a>';
+				print '<a class="reposition marginleftonly" href="'.$_SERVER['PHP_SELF'].'?id='.((int) $object->id).'&lineid='.((int) $line->id).'&action=deleteitem&token='.newToken().'" aria-label="'.dol_escape_htmltag($langs->trans('Delete')).'">'.img_delete().'</a>';
 			}
 			print '</td>';
 			print '</tr>';
@@ -422,11 +430,13 @@ if ($object->id > 0 && $action != 'create') {
 			print '<form method="POST" action="'.$_SERVER['PHP_SELF'].'?id='.((int) $object->id).'" class="inline-block centpercent">';
 			print '<input type="hidden" name="token" value="'.newToken().'">';
 			print '<input type="hidden" name="action" value="additem">';
-			print '<input type="text" name="item_label" class="flat minwidth300 maxwidth500 marginrightonly" placeholder="'.dol_escape_htmltag($langs->trans('Label')).'" value="">';
-			print $form->selectarray('item_role', $roles, 'hr', 0, 0, 0, '', 0, 0, 0, '', 'maxwidth150 marginrightonly');
-			print $form->select_dolusers(-1, 'item_fk_user_responsible', 1, null, 0, '', '', '', 0, 0, '', 0, '', 'maxwidth200 marginrightonly');
-			print $form->selectDate(-1, 'item_date_due', 0, 0, 1, '', 1, 0);
-			print ' <input type="submit" class="button smallpaddingimp" value="'.dol_escape_htmltag($langs->trans('Add')).'">';
+			print '<div class="anxhr-additem">';
+			print '<input type="text" name="item_label" class="flat minwidth200 maxwidth500 widthcentpercentminusx" placeholder="'.dol_escape_htmltag($langs->trans('Label')).'*" aria-label="'.dol_escape_htmltag($langs->trans('Label')).'" aria-required="true" value="">';
+			print '<span class="nowraponall" title="'.dol_escape_htmltag($langs->trans('AnxhrResponsibleRole')).'">'.$form->selectarray('item_role', $roles, 'hr', 0, 0, 0, 'aria-label="'.dol_escape_htmltag($langs->trans('AnxhrResponsibleRole')).'"', 0, 0, 0, '', 'maxwidth150').'</span>';
+			print '<span class="nowraponall" title="'.dol_escape_htmltag($langs->trans('AnxhrResponsible')).'">'.$form->select_dolusers(-1, 'item_fk_user_responsible', 1, null, 0, '', '', '', 0, 0, '', 0, '', 'maxwidth200').'</span>';
+			print '<span class="nowraponall" title="'.dol_escape_htmltag($langs->trans('AnxhrDateDue')).'">'.$form->selectDate(-1, 'item_date_due', 0, 0, 1, '', 1, 0).'</span>';
+			print '<button type="submit" class="button smallpaddingimp">'.img_picto('', 'fa-plus', 'class="pictofixedwidth"').$langs->trans('Add').'</button>';
+			print '</div>';
 			print '</form>';
 			print '</td></tr>';
 		}
@@ -445,7 +455,7 @@ if ($object->id > 0 && $action != 'create') {
 		if ($object->status == HrChecklist::STATUS_CANCELED) {
 			print dolGetButtonAction('', $langs->trans('ReOpen'), 'default', $_SERVER["PHP_SELF"].'?id='.$object->id.'&action=reopenchecklist&token='.newToken(), '', $permissiontoadd);
 		} else {
-			print dolGetButtonAction('', $langs->trans('Cancel'), 'default', $_SERVER["PHP_SELF"].'?id='.$object->id.'&action=cancelchecklist&token='.newToken(), '', $permissiontoadd);
+			print dolGetButtonAction('', $langs->trans('AnxhrCancelChecklist'), 'default', $_SERVER["PHP_SELF"].'?id='.$object->id.'&action=cancelchecklist&token='.newToken(), '', $permissiontoadd);
 		}
 		print dolGetButtonAction('', $langs->trans('Delete'), 'delete', $_SERVER["PHP_SELF"].'?id='.$object->id.'&action=delete&token='.newToken(), '', $permissiontodelete);
 	}
