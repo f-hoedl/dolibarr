@@ -1,0 +1,224 @@
+# Copyright (C) 2026 ANX HR contributors
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+#
+# Generic
+#
+ModuleAnxhrName = ANX HR
+ModuleAnxhrDesc = Personalverwaltung für Österreich: Dienstverträge, Fristen, Onboarding, Arbeitszeiterfassung und Reisekosten
+ModuleAnxhrDescLong = ANX HR ergänzt Dolibarr um Dienstverträge, HR-Fristen, Checklisten für Ein- und Austritt, Geräte- und Zugangsausgabe, eine AZG-konforme Arbeitszeiterfassung sowie Diäten nach österreichischem Recht.
+AnxhrSetup = ANX HR Einstellungen
+AnxhrSetupPage = Einstellungen des Moduls ANX HR
+AnxhrHrTab = Personal
+AnxhrHrFile = Personalakt
+
+#
+# Menus
+#
+AnxhrMenuHR = Personal
+AnxhrMenuCockpit = Cockpit
+AnxhrMenuEmployees = Mitarbeiter
+AnxhrMenuContracts = Dienstverträge
+AnxhrMenuDeadlines = Fristen
+AnxhrMenuChecklists = Checklisten
+AnxhrMenuHandover = Geräte und Zugänge
+AnxhrMenuMyTime = Meine Zeit
+AnxhrMenuTimeDays = Tagesübersicht
+AnxhrMenuCorrections = Korrekturanträge
+AnxhrMenuMonthlyPeriods = Monatsabschlüsse
+AnxhrMenuLeaveRequests = Abwesenheitsanträge
+AnxhrMenuExpenseReports = Reisekostenabrechnungen
+
+#
+# Permissions
+#
+Permission50010001 = Eigenen Personalakt lesen
+Permission50010002 = Personalakt aller Mitarbeiter lesen
+Permission50010003 = Personalstammdaten anlegen/bearbeiten
+Permission50010004 = Dienstverträge lesen
+Permission50010005 = Dienstverträge anlegen/bearbeiten
+Permission50010006 = Dienstverträge löschen
+Permission50010007 = HR-Fristen lesen
+Permission50010008 = HR-Fristen anlegen/bearbeiten
+Permission50010009 = HR-Fristen löschen
+Permission50010010 = Geräte- und Zugangsausgaben lesen
+Permission50010011 = Geräte- und Zugangsausgaben anlegen/bearbeiten
+Permission50010012 = Geräte- und Zugangsausgaben löschen
+Permission50010013 = Checklisten für Ein- und Austritt lesen
+Permission50010014 = Checklisten für Ein- und Austritt anlegen/bearbeiten
+Permission50010015 = Checklisten für Ein- und Austritt löschen
+Permission50010016 = Stempeln und eigene Zeitaufzeichnungen einsehen
+Permission50010017 = Korrektur eigener Zeitaufzeichnungen beantragen
+Permission50010018 = Zeitaufzeichnungen unterstellter Mitarbeiter genehmigen
+Permission50010019 = Zeitaufzeichnungen aller Mitarbeiter verwalten (HR)
+Permission50010020 = Zeitaufzeichnungen für die Lohnverrechnung exportieren
+Permission50010021 = Reisekostensätze verwalten
+Permission50010022 = Reisekostenabrechnungen zur Auszahlung freigeben (zweite Genehmigung)
+Permission50010023 = Eigene Dokumente im Personal-Safe lesen
+Permission50010024 = Dokumente in den Personal-Safe hochladen
+Permission50010025 = Personal-Safe verwalten (alle Dokumente)
+Permission50010026 = HR-Auditprotokoll lesen
+Permission50010027 = Modul ANX HR einrichten
+
+#
+# Admin
+#
+AnxhrAdminTimeModels = Arbeitszeitmodelle
+AnxhrAdminRates = Sätze
+AnxhrAdminChecklistTemplates = Checklisten-Vorlagen
+AnxhrSetupSectionGeneral = Allgemein
+AnxhrSetupSectionTime = Arbeitszeiterfassung
+AnxhrSetupSectionPrivacy = Datenschutz
+ANXHR_DEFAULT_KV = Standard-Kollektivvertrag (Code)
+ANXHR_DEFAULT_KVTooltip = Code des Kollektivvertrags, der verwendet wird, wenn im Dienstvertrag keiner hinterlegt ist, zum Beispiel SWOE.
+ANXHR_VACATION_IN_HOURS = Urlaub in Stunden verwalten
+ANXHR_VACATION_IN_HOURSTooltip = Wenn aktiviert, wird der Urlaubsanspruch in Stunden statt in Arbeitstagen geführt (sinnvoll bei unregelmäßiger Teilzeit).
+ANXHR_CLOCK_ALLOW_SELF_CORRECTION_SAME_DAY = Selbstkorrektur am selben Tag erlauben
+ANXHR_CLOCK_ALLOW_SELF_CORRECTION_SAME_DAYTooltip = Mitarbeiter können ihre Buchungen des laufenden Tages ohne Genehmigung korrigieren. Ältere Buchungen erfordern immer einen genehmigten Korrekturantrag.
+ANXHR_PERIOD_AUTOCREATE_DAY = Tag im Monat für die Anlage der Monatsabschlüsse
+ANXHR_PERIOD_AUTOCREATE_DAYTooltip = An diesem Tag des Monats legt der geplante Job die Monatsabschlüsse des Vormonats an.
+ANXHR_RETENTION_YEARS = Aufbewahrungsfrist (Jahre)
+ANXHR_RETENTION_YEARSTooltip = Zeitaufzeichnungen werden diese Anzahl an Jahren nach dem Austritt gelöscht (geplanter Job, standardmäßig deaktiviert).
+
+#
+# Dictionaries
+#
+AnxhrDictDeadlineTypes = ANX HR - Fristarten
+AnxhrDictHandoverCategories = ANX HR - Ausgabekategorien
+AnxhrDictCodeHelp = Eindeutiger Code in Großbuchstaben, ohne Leerzeichen
+AnxhrDictRemindDaysHelp = Tage vor Fälligkeit, an denen erinnert wird, durch Beistrich getrennt (zum Beispiel 30,14,7)
+Remind_days = Erinnerungstage
+
+#
+# Scheduled jobs
+#
+AnxhrDeadlineReminders = ANX HR - Fristerinnerungen versenden
+AnxhrComputeTimeDays = ANX HR - Tageswerte berechnen
+AnxhrCreateMonthlyPeriods = ANX HR - Monatsabschlüsse anlegen
+AnxhrRetentionCleanup = ANX HR - Abgelaufene Zeitaufzeichnungen löschen
+AnxhrCronDeadlineRemindersComment = Legt Kalendereinträge an und versendet Benachrichtigungen für fällige HR-Fristen
+AnxhrCronComputeTimeDaysComment = Berechnet die Tagessalden des Vortages neu
+AnxhrCronCreateMonthlyPeriodsComment = Legt am eingestellten Tag die Monatsabschlüsse des Vormonats an
+AnxhrCronRetentionCleanupComment = Löscht Zeitaufzeichnungen ausgetretener Mitarbeiter nach Ablauf der Aufbewahrungsfrist
+AnxhrCronNoReminder = Heute sind keine Erinnerungen zu versenden
+AnxhrCronRemindersSent = %s Erinnerung(en) versendet
+AnxhrDeadlineReminderLabel = HR-Frist: %s (%s)
+AnxhrDeadlineReminderNote = Fällig am %s, in %s Tag(en).
+
+#
+# Notifications
+#
+Notify_ANXHR_DEADLINE_REMIND = Erinnerung an HR-Frist
+Notify_ANXHR_TIMEPERIOD_APPROVE = Monatsabschluss genehmigt
+Notify_ANXHR_TIMECORRECTION_APPROVE = Korrekturantrag genehmigt
+
+#
+# Clock widget
+#
+AnxhrClockState = Stempelstatus
+AnxhrClockStateIn = Eingestempelt
+AnxhrClockStateBreak = In Pause
+AnxhrClockStateOut = Ausgestempelt
+
+#
+# Cockpit
+#
+AnxhrCockpit = HR-Cockpit
+AnxhrCockpitWelcome = Willkommen im Personalbereich. Über das Menü links erreichen Sie Ihre Zeitaufzeichnungen und Anträge.
+AnxhrKpiDeadlines30 = Fristen in den nächsten 30 Tagen
+AnxhrKpiChecklistsInProgress = Offene Checklisten
+AnxhrKpiOpenCorrections = Offene Korrekturanträge
+AnxhrKpiPeriodsToApprove = Zu genehmigende Monatsabschlüsse
+AnxhrKpiMissingClockOut = Fehlende Ausstempelung gestern
+AnxhrMySpace = Mein Bereich
+AnxhrMyHrFile = Mein Personalakt
+AnxhrNewLeaveRequest = Neuer Abwesenheitsantrag
+AnxhrNewExpenseReport = Neue Reisekostenabrechnung
+AnxhrNextDeadlines = Nächste Fristen
+AnxhrDateDue = Fällig am
+AnxhrNoDeadlineSoon = Keine Fristen in den nächsten 30 Tagen
+AnxhrOverdue = Überfällig
+AnxhrInNbDays = in %s Tag(en)
+
+#
+# HR tab on user card
+#
+AnxhrContract = Dienstvertrag
+AnxhrNewContract = Neuer Dienstvertrag
+AnxhrNoContract = Kein Dienstvertrag erfasst
+AnxhrOpenEnded = unbefristet
+AnxhrEmploymentPeriod = Beschäftigungszeitraum
+AnxhrWeeklyHours = Wochenstunden
+AnxhrEmploymentType = Beschäftigungsart
+AnxhrEmploymentFulltime = Vollzeit
+AnxhrEmploymentParttime = Teilzeit
+AnxhrEmploymentMarginal = Geringfügige Beschäftigung
+AnxhrEmploymentApprentice = Lehrling
+AnxhrEmploymentFreelancer = Freier Dienstnehmer
+AnxhrTimeModel = Arbeitszeitmodell
+AnxhrCollectiveAgreement = Kollektivvertrag
+AnxhrProbationEnd = Ende der Probezeit
+AnxhrFixedTermEnd = Ende der Befristung
+AnxhrNoOpenDeadline = Keine offenen Fristen
+AnxhrDeadlineTypeProbationEnd = Ende der Probezeit
+AnxhrDeadlineTypeFixedTermEnd = Ende der Befristung
+AnxhrDeadlineTypeContractEnd = Ende des Dienstverhältnisses
+AnxhrDeadlineTypeCertificate = Ablauf eines Zertifikats
+AnxhrDeadlineTypePermit = Ablauf einer Bewilligung
+AnxhrDeadlineTypeReview = Mitarbeitergespräch
+AnxhrDeadlineTypeCustom = Sonstige Frist
+AnxhrEmergencyContacts = Notfallkontakte
+AnxhrRelation = Beziehung
+AnxhrNoEmergencyContact = Kein Notfallkontakt erfasst
+AnxhrDeleteEmergencyContact = Notfallkontakt löschen
+AnxhrConfirmDeleteEmergencyContact = Möchten Sie diesen Notfallkontakt wirklich löschen?
+AnxhrEquipmentAndAccess = Geräte und Zugänge
+AnxhrNewHandover = Neue Ausgabe
+AnxhrNoOpenHandover = Keine Geräte oder Zugänge ausgegeben
+AnxhrHandoverCatHardware = Hardware
+AnxhrHandoverCatKey = Schlüssel
+AnxhrHandoverCatToken = Token oder Ausweis
+AnxhrHandoverCatAccess = Systemzugang
+AnxhrHandoverCatOther = Sonstiges
+AnxhrChecklists = Checklisten
+AnxhrNoChecklist = Keine Checkliste
+AnxhrChecklistTypeOnboarding = Eintritt
+AnxhrChecklistTypeOffboarding = Austritt
+AnxhrChecklistTypeTransfer = Abteilungswechsel
+AnxhrTimeThisMonth = Arbeitszeit in diesem Monat
+AnxhrNoTimeData = Für diesen Monat liegen keine Zeitdaten vor
+AnxhrWorked = Ist
+AnxhrTarget = Soll
+AnxhrBalance = Saldo
+AnxhrProgress = Fortschritt
+AnxhrDetails = Details
+
+#
+# Expense report integration
+#
+AnxhrTravelDiet = Dienstreise (Österreich)
+AnxhrTravelDietPlaceholder = Die Diätenberechnung wird hier zur Verfügung stehen.
+
+#
+# Working time law violations (used by TimeEngine)
+#
+AnxhrViolationBreakMissing = Ruhepause von 30 Minuten fehlt (Arbeitszeit über 6 Stunden)
+AnxhrViolationMaxDaily10h = Tägliche Normalarbeitszeit von 10 Stunden überschritten
+AnxhrViolationMaxDaily12h = Höchstarbeitszeit von 12 Stunden pro Tag überschritten
+AnxhrViolationRest11h = Tägliche Ruhezeit von 11 Stunden nicht eingehalten
+AnxhrViolationHolidayWork = Arbeit an einem Feiertag oder Sonntag
+AnxhrViolationOpenEntry = Offene Buchung (Ausstempelung fehlt)
+AnxhrViolationOrderInvalid = Ungültige Reihenfolge der Buchungen
+AnxhrViolationMaxWeekly60h = Höchstarbeitszeit von 60 Stunden pro Woche überschritten

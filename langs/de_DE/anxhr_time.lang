@@ -1,0 +1,244 @@
+# Copyright (C) 2026  ANX HR contributors
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# ANX HR - Zeiterfassung und Reisekostensaetze (Bereich TIME)
+
+#
+# Seiten und Reiter
+#
+AnxhrMyTime = Meine Zeit
+AnxhrMonthView = Monatsansicht
+AnxhrCorrections = Korrekturen
+AnxhrPeriods = Monatsabschluss
+AnxhrTimeModels = Arbeitszeitmodelle
+AnxhrKvRates = Kollektivvertrags-Parameter (KV)
+AnxhrTravelRates = Reisekostensätze
+AnxhrLast7Days = Letzte 7 Tage
+AnxhrEntriesOfDay = Buchungen vom %s
+AnxhrEntries = Buchungen
+AnxhrNoEntryToday = Noch keine Buchung erfasst.
+
+#
+# Stempeln
+#
+AnxhrClockIn = Kommen
+AnxhrClockOut = Gehen
+AnxhrStartBreak = Pause beginnen
+AnxhrEndBreak = Pause beenden
+AnxhrCurrentState = Aktueller Status
+AnxhrStateIn = Anwesend
+AnxhrStateBreak = In Pause
+AnxhrStateOut = Nicht eingestempelt
+AnxhrSince = %s seit %s
+AnxhrWorkedToday = Heute gearbeitet
+AnxhrTargetToday = Soll heute
+AnxhrBalanceMonth = Saldo (Monat)
+AnxhrClockRecorded = %s um %s erfasst
+AnxhrClockAlreadyRecorded = Diese Buchung wurde bereits vor weniger als einer Minute erfasst.
+AnxhrErrorActionNotAllowed = Diese Buchung ist im aktuellen Status nicht möglich.
+AnxhrYesterdayOpenEntry = Am %s fehlt die Gehen-Buchung. Bitte eine Korrektur beantragen.
+AnxhrHomeoffice = Homeoffice
+
+#
+# Buchungen
+#
+AnxhrEntryType = Art
+AnxhrEntryTime = Uhrzeit
+AnxhrEntryIn = Kommen
+AnxhrEntryOut = Gehen
+AnxhrEntryBreakStart = Pausenbeginn
+AnxhrEntryBreakEnd = Pausenende
+AnxhrEntryActive = Aktiv
+AnxhrEntryReplaced = Ersetzt
+AnxhrSource = Quelle
+AnxhrSource_web = Web
+AnxhrSource_pwa = App
+AnxhrSource_pwa_offline = App (offline)
+AnxhrSource_kiosk = Terminal
+AnxhrSource_api = API
+AnxhrSource_manual = Korrektur
+AnxhrSource_import = Import
+AnxhrDeviceId = Gerät
+AnxhrCorrection = Korrektur
+
+#
+# Tageswerte
+#
+AnxhrTarget = Soll
+AnxhrWorked = Ist
+AnxhrBreak = Pause
+AnxhrDiff = Differenz
+AnxhrOvertime50 = Überstunden 50%%
+AnxhrOvertime100 = Überstunden 100%%
+AnxhrOvertime50Short = ÜStd 50%%
+AnxhrOvertime100Short = ÜStd 100%%
+AnxhrExtraParttime = Mehrarbeit (Teilzeit)
+AnxhrNight = Nachtarbeit
+AnxhrPublicHoliday = Feiertag
+AnxhrAbsence = Abwesenheit
+AnxhrAbsenceVacation = Urlaub
+AnxhrAbsenceSick = Krankenstand
+AnxhrAbsenceZa = Zeitausgleich
+AnxhrAbsenceHoliday = Freistellung
+AnxhrAbsenceSpecial = Sonderurlaub
+AnxhrOpenEntry = Offene Buchung
+AnxhrLocked = Gesperrt (Monat abgeschlossen)
+AnxhrComputedAt = Berechnet am
+AnxhrCorrect = Korrigieren
+AnxhrRecomputeMonth = Monat neu berechnen
+AnxhrRecompute = Neu berechnen
+AnxhrDaysRecomputed = %s Tag(e) neu berechnet
+AnxhrMonthlySheetPdf = Monatsblatt (PDF)
+AnxhrComingSoon = Folgt in Kürze
+
+#
+# Verstoesse (Hinweise, keine Sperren)
+#
+AnxhrViolations = Hinweise und Verstöße
+AnxhrViolationBreakMissingDetail = Pause fehlt: %s (über 6 Stunden sind 30 Minuten Pause nötig, § 11 AZG)
+AnxhrViolationBreakAutoAdded = Pause automatisch abgezogen (§ 11 AZG)
+AnxhrViolationBreakAutoAddedDetail = Pause automatisch abgezogen: %s (§ 11 AZG)
+AnxhrViolationMaxDaily10hDetail = Tägliche Normalarbeitszeit-Höchstgrenze überschritten: %s gearbeitet (§ 9 AZG)
+AnxhrViolationMaxDaily12hDetail = Tageshöchstgrenze von 12 Stunden überschritten: %s gearbeitet (§ 9 AZG)
+AnxhrViolationMaxWeekly60hDetail = Wochenhöchstgrenze von 60 Stunden überschritten: %s gearbeitet (§ 9 AZG)
+AnxhrViolationRest11hDetail = Tägliche Ruhezeit unter 11 Stunden: %s (§ 12 AZG)
+AnxhrViolationHolidayWorkDetail = Arbeit an einem Feiertag: %s (§ 7 ARG)
+AnxhrViolationOpenEntryDetail = Gehen-Buchung fehlt
+AnxhrViolationOrderInvalidDetail = Buchungen in ungültiger Reihenfolge (%s ignoriert)
+
+#
+# Korrekturen
+#
+AnxhrNewCorrection = Neuer Korrekturantrag
+AnxhrRequestCorrection = Korrektur beantragen
+AnxhrSendCorrection = Antrag senden
+AnxhrLoadDay = Tag laden
+AnxhrCurrentEntries = Aktuelle Buchungen
+AnxhrNextDay = Folgetag
+AnxhrReason = Begründung
+AnxhrOldEntries = Vorher
+AnxhrNewEntries = Beantragt
+AnxhrApprover = Genehmigt von
+AnxhrDateApprove = Genehmigungsdatum
+AnxhrApproveComment = Kommentar
+AnxhrRefuse = Ablehnen
+AnxhrCorrectionRequested = Beantragt
+AnxhrCorrectionApproved = Genehmigt
+AnxhrCorrectionRefused = Abgelehnt
+AnxhrCorrectionCreated = Korrekturantrag gesendet
+AnxhrCorrectionApplied = Korrektur übernommen
+AnxhrAutoApprovedByHr = Durch HR erfasst
+AnxhrErrorNoEntries = Bitte mindestens eine Buchung (Art und Uhrzeit) eingeben.
+AnxhrErrorDayLocked = Dieser Tag gehört zu einem abgeschlossenen Monat und kann nicht geändert werden. HR muss den Monat zuerst wieder öffnen.
+AnxhrErrorCorrectionAlreadyApproved = Eine genehmigte Korrektur kann nicht gelöscht werden.
+
+#
+# Monatsabschluss
+#
+AnxhrPeriodOpen = Offen
+AnxhrPeriodConfirmed = Vom Mitarbeiter bestätigt
+AnxhrPeriodApproved = Genehmigt
+AnxhrPeriodExported = Exportiert
+AnxhrPeriodReopened = Wieder geöffnet
+AnxhrPeriodNotCreatedYet = Noch nicht abgeschlossen
+AnxhrConfirmMonth = Monat bestätigen
+AnxhrConfirmedBy = Bestätigt von
+AnxhrDateConfirm = Bestätigungsdatum
+AnxhrReopen = Wieder öffnen
+AnxhrCreatePeriodsForMonth = Perioden für Monat anlegen
+AnxhrPeriodsCreated = %s Periode(n) angelegt oder aktualisiert
+AnxhrExportCsv = CSV-Export (Lohnverrechnung)
+AnxhrBalanceStart = Saldo Beginn
+AnxhrBalanceEnd = Saldo Ende
+AnxhrOvertimePaid = Ausbezahlte Überstunden
+AnxhrZaTaken = Konsumierter Zeitausgleich
+AnxhrVacationDays = Urlaubstage
+AnxhrSickDays = Krankenstandstage
+AnxhrErrorReasonRequired = Eine Begründung ist erforderlich.
+AnxhrErrorPeriodLocked = Die Periode ist genehmigt oder exportiert und kann nicht neu berechnet werden.
+AnxhrCsvPersonnelNo = Personalnummer
+AnxhrCsvName = Name
+AnxhrCsvYear = Jahr
+AnxhrCsvMonth = Monat
+AnxhrCsvTarget = Soll
+AnxhrCsvWorked = Ist
+AnxhrCsvDiff = Diff
+AnxhrCsvOvertime50 = ÜStd50
+AnxhrCsvOvertime100 = ÜStd100
+AnxhrCsvExtraWork = Mehrarbeit
+AnxhrCsvNight = Nacht
+AnxhrCsvVacationDays = Urlaubstage
+AnxhrCsvSickDays = Krankenstandstage
+AnxhrCsvBalanceEnd = SaldoEnde
+
+#
+# Arbeitszeitmodelle und KV (Administration)
+#
+AnxhrNewTimeModel = Neues Arbeitszeitmodell
+AnxhrEditTimeModel = Arbeitszeitmodell bearbeiten
+AnxhrModelType = Modelltyp
+AnxhrModelTypeFixed = Fixe Arbeitszeit
+AnxhrModelTypeFlex = Gleitzeit
+AnxhrModelTypeSelfdetermined = Selbstbestimmte Arbeitszeit
+AnxhrModelTypeHelp = Fix: Stunden über dem Soll sind Überstunden. Gleitzeit (§ 4b AZG): Stunden über dem Soll sind Gleitzeitguthaben bis zur täglichen Normalarbeitszeit-Höchstgrenze. Selbstbestimmt: wie Gleitzeit, Aufzeichnung der Dauer genügt (§ 26 Abs 3 AZG).
+AnxhrWeeklyHours = Wochenstunden
+AnxhrWeeklyHoursModelHelp = Leer lassen, um die Summe der Tagessoll-Zeiten zu verwenden.
+AnxhrDailyMinutes = Tagessoll (hh:mm)
+AnxhrDailyMinutesHelp = Soll je Wochentag als hh:mm. Weichen die Vertragsstunden von den Modellstunden ab, wird das Soll anteilig umgerechnet.
+AnxhrFlexStart = Gleitzeitrahmen Beginn
+AnxhrFlexEnd = Gleitzeitrahmen Ende
+AnxhrFlexFrame = Gleitzeitrahmen
+AnxhrCoreStart = Kernzeit Beginn
+AnxhrCoreEnd = Kernzeit Ende
+AnxhrCoreTime = Kernzeit
+AnxhrFlexPeriodMonths = Gleitzeitperiode (Monate)
+AnxhrMaxCarryPlus = Maximaler Übertrag plus (hh:mm)
+AnxhrMaxCarryMinus = Maximaler Übertrag minus (hh:mm)
+AnxhrBreakRule = Pausenregel
+AnxhrBreakRuleAuto = Automatisch abziehen
+AnxhrBreakRuleCheck = Nur prüfen
+AnxhrBreakRuleRequired = Pausenbuchung verpflichtend
+AnxhrBreakRuleHelp = Bei mehr als 6 Stunden Arbeitszeit ist eine Pause von 30 Minuten nötig (§ 11 AZG). Automatisch: fehlende Minuten werden abgezogen und vermerkt. Prüfen / verpflichtend: ein Verstoß wird angezeigt.
+AnxhrNormalDailyMax = Tägliche Normalarbeitszeit-Höchstgrenze
+AnxhrNormalDailyMaxHelp = Üblich 10:00 (§ 9 AZG, § 4b AZG). Stunden darüber sind Überstunden und werden markiert.
+AnxhrKvCode = Kollektivvertrag (Code)
+AnxhrNewKvRate = Neuer KV-Parametersatz
+AnxhrEditKvRate = KV-Parametersatz bearbeiten
+AnxhrValidFrom = Gültig ab
+AnxhrValidFromHelp = Verwendet wird der Parametersatz mit dem spätesten Gültig-ab-Datum, das nicht nach dem Tag liegt.
+AnxhrOtPct = Überstundenzuschlag
+AnxhrOtNightPct = Zuschlag Nachtüberstunden
+AnxhrOtSundayPct = Zuschlag Sonn- / Feiertag
+AnxhrParttimeExtraPct = Mehrarbeitszuschlag Teilzeit
+AnxhrZaFactor = Zeitausgleichsfaktor
+AnxhrZaFactorHelp = 1,5 bedeutet: eine Überstunde ergibt 1,5 Stunden Zeitausgleich (§ 10 AZG).
+AnxhrDec24Free = 24.12. frei
+AnxhrDec31Free = 31.12. frei
+AnxhrNightStart = Nacht Beginn
+AnxhrNightEnd = Nacht Ende
+AnxhrNightWindow = Nachtzeit
+AnxhrDefaultTimeModel = Standard-Arbeitszeitmodell
+AnxhrDefaultTimeModelHelp = Für Mitarbeiter ohne Vertrag oder ohne Arbeitszeitmodell im Vertrag.
+AnxhrDefaultKv = Standard-Kollektivvertrag
+AnxhrDefaultKvHelp = Wird verwendet, wenn weder Vertrag noch Arbeitszeitmodell einen KV-Code haben.
+AnxhrConfirmDeleteModel = Arbeitszeitmodell %s löschen?
+AnxhrConfirmDeleteKv = Diesen Parametersatz von %s löschen?
+
+#
+# Reisekostensaetze (Administration)
+#
+AnxhrNewRate = Neuer Satz
+AnxhrEditRate = Satz bearbeiten
+AnxhrCapPerYear = Jahresgrenze (km)
+AnxhrCapPerYearHelp = Steuerfreie Obergrenze je Kalenderjahr, z.B. 30000 km für PKW, 3000 km für Fahrrad. Kilometer darüber sind steuerpflichtig.
+AnxhrTravelRateCodeHelp = Codes: taggeld_in, naechtigung_in, km_car, km_motorbike, km_bike, km_passenger, taggeld_XX und naechtigung_XX (XX = ISO-Ländercode) für Auslandsreisen.
+AnxhrRatesHelp = Sätze werden mit Gültig-ab-Datum historisiert. Eine Reise verwendet die am Reisetag gültigen Sätze. Alte Sätze nie ändern, sondern eine neue Zeile anlegen.
+AnxhrCurrentlyValid = Aktuell gültig
+AnxhrInstallAustrianDefaults = Österreichische Standardsätze installieren
+AnxhrInstallAustrianDefaultsHelp = Fügt fehlende gesetzliche Sätze für Österreich hinzu (Taggeld, Nächtigungsgeld, Kilometergeld). Bestehende Zeilen bleiben unverändert.
+AnxhrDefaultRatesInstalled = %s Satz/Sätze hinzugefügt
+AnxhrConfirmDeleteRate = Diesen Satz von %s löschen?

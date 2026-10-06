@@ -1,0 +1,179 @@
+# Copyright (C) 2026 ANX
+# ANX HR Kern: Verträge, Fristen, Notfallkontakte, Übergaben, Checklisten (Agent HRCORE)
+# Gemeinsame Schlüssel (AnxhrContract, AnxhrDeadlineType*, AnxhrHandoverCat*, AnxhrEmployment*, AnxhrChecklistType*, ...) stehen in anxhr.lang
+
+#
+# Objekte
+#
+AnxhrEmployee = Mitarbeiter:in
+AnxhrContracts = Dienstverträge
+AnxhrDeadline = HR-Frist
+AnxhrDeadlines = HR-Fristen
+AnxhrEmergencyContact = Notfallkontakt
+AnxhrHandover = Übergabe
+AnxhrHandovers = Übergaben (Geräte, Schlüssel, Zugänge)
+AnxhrChecklist = Checkliste
+AnxhrChecklistItems = Checklistenpunkte
+AnxhrChecklistTemplate = Checklistenvorlage
+AnxhrNewDeadline = Neue HR-Frist
+AnxhrNewChecklist = Neue Checkliste
+
+#
+# Status
+#
+AnxhrStatusActive = Aktiv
+AnxhrStatusEnded = Beendet
+AnxhrStatusOpen = Offen
+AnxhrStatusDone = Erledigt
+AnxhrStatusSkipped = Übersprungen
+AnxhrDueSoon = Bald fällig
+AnxhrHandoverStatusOut = Ausgegeben
+AnxhrHandoverStatusReturned = Zurückgegeben
+AnxhrHandoverStatusLost = Verloren
+
+#
+# Vertrag
+#
+AnxhrSectionGeneral = Allgemein
+AnxhrSectionDates = Termine
+AnxhrSectionWorkingTime = Arbeitszeit
+AnxhrSectionKv = Kollektivvertrag (KV)
+AnxhrSectionHomeoffice = Homeoffice
+AnxhrSectionVacation = Urlaub
+AnxhrSectionSensitive = Sensible Daten (nur HR)
+AnxhrContractDateStart = Beginn
+AnxhrContractDateStartHelp = Beginn dieser Vertragsversion. Beim ersten Vertrag ist das der Eintrittstag.
+AnxhrContractDateEnd = Ende
+AnxhrContractDateEndHelp = Austrittsdatum. Bei unbefristeter Beschäftigung leer lassen. Mit einem Austrittsdatum werden die Frist "Austritt" und die Offboarding-Checkliste angelegt.
+AnxhrProbationEndHelp = Letzter Tag des Probemonats (max. 1 Monat). Es wird eine Frist mit Erinnerungen 30 und 14 Tage vorher angelegt.
+AnxhrFixedTermEndHelp = Ende einer Befristung. Es wird eine Frist mit Erinnerungen 60, 30 und 14 Tage vorher angelegt.
+AnxhrNoticePeriodWeeks = Kündigungsfrist (Wochen)
+AnxhrWeeklyHoursHelp = Vertragliche Wochenstunden. Werden bei aktivem Vertrag in die Benutzerkarte (Wochenstunden) übernommen.
+AnxhrTimeModelHelp = Arbeitszeitmodell für die Zeiterfassung (fix, Gleitzeit, selbstbestimmt).
+AnxhrKvCode = Kollektivvertrag
+AnxhrKvCodeHelp = Kürzel des Kollektivvertrags, zum Beispiel SWÖ oder IT-KV.
+AnxhrKvGroup = Verwendungsgruppe
+AnxhrKvGroupHelp = Verwendungs- bzw. Beschäftigungsgruppe laut Kollektivvertrag.
+AnxhrKvLevel = Stufe
+AnxhrKvLevelHelp = Gehaltsstufe innerhalb der Verwendungsgruppe.
+AnxhrKvLevelDate = Stufe seit
+AnxhrKvLevelDateHelp = Datum der letzten Vorrückung. Dient zur Planung der nächsten Vorrückung.
+AnxhrHomeofficeDaysWeek = Homeoffice-Tage pro Woche
+AnxhrHomeofficeDaysWeekHelp = Vereinbarte Homeoffice-Tage pro Woche. Eine schriftliche Homeoffice-Vereinbarung ist erforderlich.
+AnxhrHomeofficeAgreementDate = Homeoffice-Vereinbarung vom
+AnxhrVacationDaysYear = Urlaubstage pro Jahr
+AnxhrVacationDaysYearHelp = Jährlicher Urlaubsanspruch (25 Arbeitstage bzw. 30 Werktage, nach 25 Dienstjahren 30 Arbeitstage).
+AnxhrVacationInHours = Urlaub in Stunden führen
+AnxhrVacationInHoursHelp = Empfohlen bei Teilzeit mit unregelmäßigen Arbeitstagen.
+AnxhrPriorServiceMonths = Angerechnete Vordienstzeiten (Monate)
+AnxhrPriorServiceMonthsHelp = Vordienstzeiten, die für Urlaubsanspruch und KV-Einstufung angerechnet werden.
+AnxhrDisabilityStatus = Behinderungsstatus
+AnxhrDisabilityStatusHelp = Besondere Kategorie personenbezogener Daten (Art. 9 DSGVO), verschlüsselt gespeichert und nur für HR sichtbar. Beispiel: begünstigt behindert, gültig bis.
+AnxhrDisabilityStatusTooLong = Der Text zum Behinderungsstatus ist zu lang (maximal ca. 100 Zeichen)
+AnxhrPeriod = Zeitraum
+AnxhrContractHistory = Vertragsverlauf der Mitarbeiterin bzw. des Mitarbeiters
+AnxhrDeleteContract = Vertrag löschen
+AnxhrConfirmDeleteContract = Wollen Sie diesen Vertrag samt Fristen wirklich löschen?
+AnxhrActivateContract = Aktivieren
+AnxhrConfirmActivateContract = Vertrag %s aktivieren? Ältere aktive Verträge werden beendet, Fristen angelegt und die Benutzerkarte aktualisiert.
+AnxhrContractActivated = Vertrag aktiviert
+AnxhrEndContract = Vertrag beenden
+AnxhrConfirmEndContract = Vertrag %s mit folgendem Datum beenden?
+AnxhrContractEnded = Vertrag beendet
+AnxhrContractsAutoEnded = Folgende frühere Verträge wurden automatisch beendet (Ende = Tag vor dem neuen Beginn): %s
+AnxhrNewVersion = Neue Version
+AnxhrNewVersionHelp = Neue Vertragsversion anlegen (zum Beispiel Stundenänderung oder Verlängerung). Der aktuelle Vertrag endet automatisch am Tag vor dem neuen Beginn.
+AnxhrNewVersionInfo = Neue Version von Vertrag %s: Die Werte wurden übernommen, bitte das neue Beginndatum eintragen.
+AnxhrRegenerateDeadlines = Fristen neu erzeugen
+AnxhrRegenerateDeadlinesHelp = Automatische Fristen (Probemonat, Befristung, Austritt) aus den Daten dieses Vertrags anlegen bzw. aktualisieren.
+AnxhrDeadlinesGenerated = %s Frist(en) angelegt bzw. aktualisiert
+
+#
+# Frist
+#
+AnxhrRemindDays = Erinnerungen (Tage vorher)
+AnxhrRemindDaysHelp = Durch Beistrich getrennte Liste der Tage vor Fälligkeit, an denen erinnert wird, zum Beispiel 30,14,7.
+AnxhrLastRemindDate = Letzte Erinnerung
+AnxhrResponsible = Verantwortlich
+AnxhrAgendaEvent = Termin
+AnxhrDaysLeft = Verbleibende Tage
+AnxhrMarkDone = Als erledigt markieren
+AnxhrConfirmMarkDone = Diese Frist als erledigt markieren?
+AnxhrDeadlineMarkedDone = Frist als erledigt markiert
+AnxhrDeleteDeadline = Frist löschen
+AnxhrConfirmDeleteDeadline = Wollen Sie diese Frist wirklich löschen?
+AnxhrConfirmCancelDeadline = Diese Frist stornieren? Es werden keine Erinnerungen mehr versendet.
+AnxhrConfirmReopenDeadline = Diese Frist wieder öffnen?
+
+#
+# Notfallkontakt
+#
+AnxhrRelationHelp = Beziehung zur Mitarbeiterin bzw. zum Mitarbeiter, zum Beispiel Partner:in, Elternteil, Kind.
+
+#
+# Übergabe
+#
+AnxhrHandoverCategory = Übergabekategorie
+AnxhrSerial = Seriennummer
+AnxhrSystemName = System
+AnxhrSystemNameHelp = Bei Zugängen: Name des Systems bzw. der Anwendung (zum Beispiel M365, ERP, VPN).
+AnxhrRoleName = Rolle
+AnxhrRoleNameHelp = Bei Zugängen: im System vergebene Rolle bzw. Berechtigung.
+AnxhrAsset = Anlage
+AnxhrDateOut = Ausgegeben am
+AnxhrDateReturn = Zurückgegeben am
+AnxhrConditionOut = Zustand bei Ausgabe
+AnxhrConditionReturn = Zustand bei Rückgabe
+AnxhrSetReturned = Zurückgegeben
+AnxhrSetRevoked = Entzogen
+AnxhrConfirmSetReturned = Rückgabe von %s erfassen?
+AnxhrHandoverReturned = Rückgabe erfasst
+AnxhrSetLost = Verloren
+AnxhrConfirmSetLost = %s als verloren markieren?
+AnxhrConfirmReopenHandover = %s wieder auf ausgegeben setzen?
+AnxhrDeleteHandover = Übergabe löschen
+AnxhrConfirmDeleteHandover = Wollen Sie diese Übergabe wirklich löschen?
+AnxhrHandoverLinkedToItem = Übergabe angelegt und mit dem Checklistenpunkt verknüpft
+
+#
+# Checkliste
+#
+AnxhrChecklistTemplateHelp = Die Punkte der Vorlage werden in die Checkliste übernommen. Die Fälligkeiten werden vom Stichtag aus berechnet.
+AnxhrAnchorDate = Stichtag
+AnxhrAnchorDateHelp = Bezugsdatum für die Fälligkeiten der Punkte (Eintrittstag beim Onboarding, Austrittstag beim Offboarding).
+AnxhrResponsibleRole = Zuständige Rolle
+AnxhrRoleHr = HR
+AnxhrRoleIt = IT
+AnxhrRoleSupervisor = Führungskraft
+AnxhrRoleEmployee = Mitarbeiter:in
+AnxhrDateDone = Erledigt am
+AnxhrDoneBy = Erledigt von
+AnxhrItemDone = Erledigt
+AnxhrItemSkip = Überspringen
+AnxhrCreateHandover = Übergabe erfassen
+AnxhrAddItem = Punkt hinzufügen
+AnxhrNoItems = Keine Punkte
+AnxhrItemReturnHandover = Rückgabe: %s
+AnxhrItemRevokeAccess = Zugang entziehen: %s
+AnxhrDeleteChecklist = Checkliste löschen
+AnxhrConfirmDeleteChecklist = Wollen Sie diese Checkliste samt allen Punkten wirklich löschen?
+AnxhrConfirmCancelChecklist = Checkliste %s stornieren?
+AnxhrConfirmReopenChecklist = Checkliste %s wieder öffnen?
+
+#
+# Checklistenvorlagen (Einrichtung)
+#
+AnxhrChecklistTemplatesDesc = Vorlagen dienen zum Anlegen von Onboarding-, Offboarding- und Versetzungs-Checklisten. Beim Aktivieren des ersten Vertrags einer neuen Mitarbeiterin bzw. eines neuen Mitarbeiters wird die erste aktive Onboarding-Vorlage verwendet. Bei Eingabe eines Austrittsdatums wird die erste aktive Offboarding-Vorlage verwendet und für jede offene Übergabe ein Rückgabepunkt ergänzt.
+AnxhrNbItems = Punkte
+AnxhrEditItems = Punkte bearbeiten
+AnxhrOffsetDays = Versatz (Tage)
+AnxhrOffsetDaysHelp = Anzahl Tage relativ zum Stichtag. Negative Werte liegen vor dem Stichtag.
+AnxhrCreatesHandover = Erzeugt eine Übergabe
+AnxhrCreatesHandoverHelp = Wenn aktiviert, bietet der Punkt eine Schaltfläche zum Erfassen der Übergabe (Gerät, Schlüssel, Token oder Zugang).
+AnxhrDeleteChecklistTemplate = Vorlage löschen
+AnxhrConfirmDeleteChecklistTemplate = Vorlage %s samt allen Punkten löschen? Bestehende Checklisten bleiben unverändert.
+
+#
+# Listen
+#
+AnxhrExportCsvHelp = Gefilterte Liste mit den gewählten Spalten als CSV-Datei exportieren

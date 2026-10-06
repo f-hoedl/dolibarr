@@ -1,0 +1,244 @@
+# Copyright (C) 2026  ANX HR contributors
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# ANX HR - Time tracking and travel rates (area TIME)
+
+#
+# Pages and tabs
+#
+AnxhrMyTime = My time
+AnxhrMonthView = Month view
+AnxhrCorrections = Corrections
+AnxhrPeriods = Monthly closing
+AnxhrTimeModels = Working time models
+AnxhrKvRates = Collective agreement parameters (KV)
+AnxhrTravelRates = Travel allowance rates
+AnxhrLast7Days = Last 7 days
+AnxhrEntriesOfDay = Entries of %s
+AnxhrEntries = Entries
+AnxhrNoEntryToday = No entry recorded yet.
+
+#
+# Clock
+#
+AnxhrClockIn = Clock in
+AnxhrClockOut = Clock out
+AnxhrStartBreak = Start break
+AnxhrEndBreak = End break
+AnxhrCurrentState = Current state
+AnxhrStateIn = Working
+AnxhrStateBreak = On break
+AnxhrStateOut = Not clocked in
+AnxhrSince = %s since %s
+AnxhrWorkedToday = Worked today
+AnxhrTargetToday = Target today
+AnxhrBalanceMonth = Balance (month)
+AnxhrClockRecorded = %s recorded at %s
+AnxhrClockAlreadyRecorded = This action was already recorded less than a minute ago.
+AnxhrErrorActionNotAllowed = This action is not possible in the current state.
+AnxhrYesterdayOpenEntry = There is no clock out on %s. Please request a correction.
+AnxhrHomeoffice = Home office
+
+#
+# Entries
+#
+AnxhrEntryType = Type
+AnxhrEntryTime = Time
+AnxhrEntryIn = Clock in
+AnxhrEntryOut = Clock out
+AnxhrEntryBreakStart = Break start
+AnxhrEntryBreakEnd = Break end
+AnxhrEntryActive = Active
+AnxhrEntryReplaced = Replaced
+AnxhrSource = Source
+AnxhrSource_web = Web
+AnxhrSource_pwa = App
+AnxhrSource_pwa_offline = App (offline)
+AnxhrSource_kiosk = Terminal
+AnxhrSource_api = API
+AnxhrSource_manual = Correction
+AnxhrSource_import = Import
+AnxhrDeviceId = Device
+AnxhrCorrection = Correction
+
+#
+# Day values
+#
+AnxhrTarget = Target
+AnxhrWorked = Worked
+AnxhrBreak = Break
+AnxhrDiff = Difference
+AnxhrOvertime50 = Overtime 50%%
+AnxhrOvertime100 = Overtime 100%%
+AnxhrOvertime50Short = OT 50%%
+AnxhrOvertime100Short = OT 100%%
+AnxhrExtraParttime = Extra work (part-time)
+AnxhrNight = Night work
+AnxhrPublicHoliday = Public holiday
+AnxhrAbsence = Absence
+AnxhrAbsenceVacation = Vacation
+AnxhrAbsenceSick = Sick leave
+AnxhrAbsenceZa = Time off in lieu
+AnxhrAbsenceHoliday = Leave
+AnxhrAbsenceSpecial = Special leave
+AnxhrOpenEntry = Open entry
+AnxhrLocked = Locked (month closed)
+AnxhrComputedAt = Computed at
+AnxhrCorrect = Correct
+AnxhrRecomputeMonth = Recompute month
+AnxhrRecompute = Recompute
+AnxhrDaysRecomputed = %s day(s) recomputed
+AnxhrMonthlySheetPdf = Monthly sheet (PDF)
+AnxhrComingSoon = Coming soon
+
+#
+# Violations (warnings, not blockers)
+#
+AnxhrViolations = Notes and violations
+AnxhrViolationBreakMissingDetail = Break missing: %s (more than 6 hours require 30 minutes, paragraph 11 AZG)
+AnxhrViolationBreakAutoAdded = Break added automatically (paragraph 11 AZG)
+AnxhrViolationBreakAutoAddedDetail = Break added automatically: %s (paragraph 11 AZG)
+AnxhrViolationMaxDaily10hDetail = Daily normal maximum exceeded: %s worked (paragraph 9 AZG)
+AnxhrViolationMaxDaily12hDetail = Absolute daily maximum of 12 hours exceeded: %s worked (paragraph 9 AZG)
+AnxhrViolationMaxWeekly60hDetail = Weekly maximum of 60 hours exceeded: %s worked (paragraph 9 AZG)
+AnxhrViolationRest11hDetail = Daily rest below 11 hours: %s (paragraph 12 AZG)
+AnxhrViolationHolidayWorkDetail = Work on a public holiday: %s (paragraph 7 ARG)
+AnxhrViolationOpenEntryDetail = Clock out missing
+AnxhrViolationOrderInvalidDetail = Entries in invalid order (%s ignored)
+
+#
+# Corrections
+#
+AnxhrNewCorrection = New correction request
+AnxhrRequestCorrection = Request correction
+AnxhrSendCorrection = Send request
+AnxhrLoadDay = Load day
+AnxhrCurrentEntries = Current entries
+AnxhrNextDay = Next day
+AnxhrReason = Reason
+AnxhrOldEntries = Before
+AnxhrNewEntries = Requested
+AnxhrApprover = Approved by
+AnxhrDateApprove = Approval date
+AnxhrApproveComment = Comment
+AnxhrRefuse = Refuse
+AnxhrCorrectionRequested = Requested
+AnxhrCorrectionApproved = Approved
+AnxhrCorrectionRefused = Refused
+AnxhrCorrectionCreated = Correction request sent
+AnxhrCorrectionApplied = Correction applied
+AnxhrAutoApprovedByHr = Entered by HR
+AnxhrErrorNoEntries = Please enter at least one entry (type and time).
+AnxhrErrorDayLocked = This day belongs to a closed month and cannot be changed. HR must reopen the month first.
+AnxhrErrorCorrectionAlreadyApproved = An approved correction cannot be deleted.
+
+#
+# Periods
+#
+AnxhrPeriodOpen = Open
+AnxhrPeriodConfirmed = Confirmed by employee
+AnxhrPeriodApproved = Approved
+AnxhrPeriodExported = Exported
+AnxhrPeriodReopened = Reopened
+AnxhrPeriodNotCreatedYet = Not closed yet
+AnxhrConfirmMonth = Confirm month
+AnxhrConfirmedBy = Confirmed by
+AnxhrDateConfirm = Confirmation date
+AnxhrReopen = Reopen
+AnxhrCreatePeriodsForMonth = Create periods for month
+AnxhrPeriodsCreated = %s period(s) created or updated
+AnxhrExportCsv = Export CSV (payroll)
+AnxhrBalanceStart = Balance start
+AnxhrBalanceEnd = Balance end
+AnxhrOvertimePaid = Overtime paid out
+AnxhrZaTaken = Time off in lieu taken
+AnxhrVacationDays = Vacation days
+AnxhrSickDays = Sick days
+AnxhrErrorReasonRequired = A reason is required.
+AnxhrErrorPeriodLocked = The period is approved or exported and cannot be recomputed.
+AnxhrCsvPersonnelNo = PersonnelNo
+AnxhrCsvName = Name
+AnxhrCsvYear = Year
+AnxhrCsvMonth = Month
+AnxhrCsvTarget = Target
+AnxhrCsvWorked = Worked
+AnxhrCsvDiff = Diff
+AnxhrCsvOvertime50 = Overtime50
+AnxhrCsvOvertime100 = Overtime100
+AnxhrCsvExtraWork = ExtraWork
+AnxhrCsvNight = Night
+AnxhrCsvVacationDays = VacationDays
+AnxhrCsvSickDays = SickDays
+AnxhrCsvBalanceEnd = BalanceEnd
+
+#
+# Time models and KV (admin)
+#
+AnxhrNewTimeModel = New working time model
+AnxhrEditTimeModel = Edit working time model
+AnxhrModelType = Model type
+AnxhrModelTypeFixed = Fixed working time
+AnxhrModelTypeFlex = Flexitime
+AnxhrModelTypeSelfdetermined = Self determined working time
+AnxhrModelTypeHelp = Fixed: hours above target are overtime. Flexitime (paragraph 4b AZG): hours above target are flex credit up to the daily normal maximum. Self determined: like flexitime, recording of duration is sufficient (paragraph 26 (3) AZG).
+AnxhrWeeklyHours = Weekly hours
+AnxhrWeeklyHoursModelHelp = Leave empty to use the sum of the daily targets.
+AnxhrDailyMinutes = Daily target (hh:mm)
+AnxhrDailyMinutesHelp = Target per weekday as hh:mm. For employees whose contract hours differ from the model hours, targets are scaled proportionally.
+AnxhrFlexStart = Flexitime frame start
+AnxhrFlexEnd = Flexitime frame end
+AnxhrFlexFrame = Flexitime frame
+AnxhrCoreStart = Core time start
+AnxhrCoreEnd = Core time end
+AnxhrCoreTime = Core time
+AnxhrFlexPeriodMonths = Flexitime period (months)
+AnxhrMaxCarryPlus = Maximum carry-over plus (hh:mm)
+AnxhrMaxCarryMinus = Maximum carry-over minus (hh:mm)
+AnxhrBreakRule = Break rule
+AnxhrBreakRuleAuto = Deduct automatically
+AnxhrBreakRuleCheck = Check only
+AnxhrBreakRuleRequired = Break booking required
+AnxhrBreakRuleHelp = More than 6 hours of work require a break of 30 minutes (paragraph 11 AZG). Automatic: missing minutes are deducted and noted. Check / required: a violation is shown.
+AnxhrNormalDailyMax = Daily normal maximum
+AnxhrNormalDailyMaxHelp = Usually 10:00 (paragraph 9 AZG, paragraph 4b AZG). Hours above are overtime and are flagged.
+AnxhrKvCode = Collective agreement code
+AnxhrNewKvRate = New KV parameter set
+AnxhrEditKvRate = Edit KV parameter set
+AnxhrValidFrom = Valid from
+AnxhrValidFromHelp = The parameter set with the latest valid from date not after the day is used.
+AnxhrOtPct = Overtime surcharge
+AnxhrOtNightPct = Night overtime surcharge
+AnxhrOtSundayPct = Sunday / holiday surcharge
+AnxhrParttimeExtraPct = Part-time extra work surcharge
+AnxhrZaFactor = Time off in lieu factor
+AnxhrZaFactorHelp = 1.5 means one overtime hour gives 1.5 hours of time off (paragraph 10 AZG).
+AnxhrDec24Free = Dec 24 free
+AnxhrDec31Free = Dec 31 free
+AnxhrNightStart = Night start
+AnxhrNightEnd = Night end
+AnxhrNightWindow = Night period
+AnxhrDefaultTimeModel = Default working time model
+AnxhrDefaultTimeModelHelp = Used for employees without contract or without time model in the contract.
+AnxhrDefaultKv = Default collective agreement
+AnxhrDefaultKvHelp = Used when neither contract nor time model define a collective agreement code.
+AnxhrConfirmDeleteModel = Delete the working time model %s?
+AnxhrConfirmDeleteKv = Delete this parameter set of %s?
+
+#
+# Travel rates (admin)
+#
+AnxhrNewRate = New rate
+AnxhrEditRate = Edit rate
+AnxhrCapPerYear = Annual cap (km)
+AnxhrCapPerYearHelp = Tax free maximum per calendar year, e.g. 30000 km for cars, 3000 km for bicycles. Kilometres above are taxable.
+AnxhrTravelRateCodeHelp = Codes: taggeld_in, naechtigung_in, km_car, km_motorbike, km_bike, km_passenger, taggeld_XX and naechtigung_XX (XX = ISO country code) for travel abroad.
+AnxhrRatesHelp = Rates are kept as history with a valid from date. A trip uses the rates valid on the trip date. Never change an old rate, add a new row instead.
+AnxhrCurrentlyValid = Currently valid
+AnxhrInstallAustrianDefaults = Install Austrian defaults
+AnxhrInstallAustrianDefaultsHelp = Adds the legal Austrian rates (per diem, night allowance, mileage) that are missing. Existing rows are not changed.
+AnxhrDefaultRatesInstalled = %s rate(s) added
+AnxhrConfirmDeleteRate = Delete this rate of %s?

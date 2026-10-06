@@ -1,0 +1,224 @@
+# Copyright (C) 2026 ANX HR contributors
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+#
+# Generic
+#
+ModuleAnxhrName = ANX HR
+ModuleAnxhrDesc = HR for Austria: employment contracts, deadlines, onboarding, time tracking and travel allowances
+ModuleAnxhrDescLong = ANX HR adds employment contracts, HR deadlines, on/offboarding checklists, equipment handover, time tracking compliant with Austrian working time law and Austrian travel allowances to Dolibarr.
+AnxhrSetup = ANX HR setup
+AnxhrSetupPage = Settings of the ANX HR module
+AnxhrHrTab = HR
+AnxhrHrFile = HR file
+
+#
+# Menus
+#
+AnxhrMenuHR = HR
+AnxhrMenuCockpit = Cockpit
+AnxhrMenuEmployees = Employees
+AnxhrMenuContracts = Contracts
+AnxhrMenuDeadlines = Deadlines
+AnxhrMenuChecklists = Checklists
+AnxhrMenuHandover = Equipment and access
+AnxhrMenuMyTime = My time
+AnxhrMenuTimeDays = Time days
+AnxhrMenuCorrections = Corrections
+AnxhrMenuMonthlyPeriods = Monthly periods
+AnxhrMenuLeaveRequests = Leave requests
+AnxhrMenuExpenseReports = Expense reports
+
+#
+# Permissions
+#
+Permission50010001 = Read own HR file
+Permission50010002 = Read HR file of all employees
+Permission50010003 = Create/update HR master data of employees
+Permission50010004 = Read employment contracts
+Permission50010005 = Create/update employment contracts
+Permission50010006 = Delete employment contracts
+Permission50010007 = Read HR deadlines
+Permission50010008 = Create/update HR deadlines
+Permission50010009 = Delete HR deadlines
+Permission50010010 = Read equipment and access handovers
+Permission50010011 = Create/update equipment and access handovers
+Permission50010012 = Delete equipment and access handovers
+Permission50010013 = Read onboarding/offboarding checklists
+Permission50010014 = Create/update onboarding/offboarding checklists
+Permission50010015 = Delete onboarding/offboarding checklists
+Permission50010016 = Clock in/out and see own time records
+Permission50010017 = Request corrections of own time records
+Permission50010018 = Approve time records of subordinates
+Permission50010019 = Administrate time records of all employees (HR)
+Permission50010020 = Export time records for payroll
+Permission50010021 = Manage travel allowance rates
+Permission50010022 = Release expense reports for payment (second approval)
+Permission50010023 = Read own documents in the HR vault
+Permission50010024 = Upload documents into the HR vault
+Permission50010025 = Administrate the HR vault (all documents)
+Permission50010026 = Read HR audit log
+Permission50010027 = Setup of ANX HR module
+
+#
+# Admin
+#
+AnxhrAdminTimeModels = Working time models
+AnxhrAdminRates = Rates
+AnxhrAdminChecklistTemplates = Checklist templates
+AnxhrSetupSectionGeneral = General
+AnxhrSetupSectionTime = Time tracking
+AnxhrSetupSectionPrivacy = Data protection
+ANXHR_DEFAULT_KV = Default collective agreement (code)
+ANXHR_DEFAULT_KVTooltip = Code of the collective agreement used when a contract has none, for example SWOE.
+ANXHR_VACATION_IN_HOURS = Manage vacation in hours
+ANXHR_VACATION_IN_HOURSTooltip = If enabled, vacation entitlement is managed in hours instead of working days (useful for irregular part-time).
+ANXHR_CLOCK_ALLOW_SELF_CORRECTION_SAME_DAY = Allow self-correction on the same day
+ANXHR_CLOCK_ALLOW_SELF_CORRECTION_SAME_DAYTooltip = Employees may correct their own time entries of the current day without approval. Older entries always need an approved correction request.
+ANXHR_PERIOD_AUTOCREATE_DAY = Day of month for creating monthly periods
+ANXHR_PERIOD_AUTOCREATE_DAYTooltip = On this day of the month the scheduled job creates the monthly periods of the previous month.
+ANXHR_RETENTION_YEARS = Retention period (years)
+ANXHR_RETENTION_YEARSTooltip = Time records are deleted this number of years after the end of employment (scheduled job, disabled by default).
+
+#
+# Dictionaries
+#
+AnxhrDictDeadlineTypes = ANX HR - Deadline types
+AnxhrDictHandoverCategories = ANX HR - Handover categories
+AnxhrDictCodeHelp = Unique code in capital letters, without spaces
+AnxhrDictRemindDaysHelp = Days before the due date on which reminders are sent, separated by comma (for example 30,14,7)
+Remind_days = Reminder days
+
+#
+# Scheduled jobs
+#
+AnxhrDeadlineReminders = ANX HR - Send deadline reminders
+AnxhrComputeTimeDays = ANX HR - Compute time days
+AnxhrCreateMonthlyPeriods = ANX HR - Create monthly time periods
+AnxhrRetentionCleanup = ANX HR - Delete expired time records
+AnxhrCronDeadlineRemindersComment = Creates agenda events and sends notifications for HR deadlines that are due
+AnxhrCronComputeTimeDaysComment = Recomputes the daily time balance of the previous day
+AnxhrCronCreateMonthlyPeriodsComment = Creates the monthly time periods of the previous month on the configured day
+AnxhrCronRetentionCleanupComment = Deletes time records of former employees after the retention period
+AnxhrCronNoReminder = No reminder to send today
+AnxhrCronRemindersSent = %s reminder(s) sent
+AnxhrDeadlineReminderLabel = HR deadline: %s (%s)
+AnxhrDeadlineReminderNote = Due on %s, in %s day(s).
+
+#
+# Notifications
+#
+Notify_ANXHR_DEADLINE_REMIND = HR deadline reminder
+Notify_ANXHR_TIMEPERIOD_APPROVE = Monthly time period approved
+Notify_ANXHR_TIMECORRECTION_APPROVE = Time correction approved
+
+#
+# Clock widget
+#
+AnxhrClockState = Clock state
+AnxhrClockStateIn = Clocked in
+AnxhrClockStateBreak = On break
+AnxhrClockStateOut = Clocked out
+
+#
+# Cockpit
+#
+AnxhrCockpit = HR cockpit
+AnxhrCockpitWelcome = Welcome to the HR area. Use the menu on the left to access your time records and requests.
+AnxhrKpiDeadlines30 = Deadlines within 30 days
+AnxhrKpiChecklistsInProgress = Checklists in progress
+AnxhrKpiOpenCorrections = Open time corrections
+AnxhrKpiPeriodsToApprove = Monthly periods to approve
+AnxhrKpiMissingClockOut = Missing clock-out yesterday
+AnxhrMySpace = My space
+AnxhrMyHrFile = My HR file
+AnxhrNewLeaveRequest = New leave request
+AnxhrNewExpenseReport = New expense report
+AnxhrNextDeadlines = Next deadlines
+AnxhrDateDue = Due date
+AnxhrNoDeadlineSoon = No deadline within the next 30 days
+AnxhrOverdue = Overdue
+AnxhrInNbDays = in %s day(s)
+
+#
+# HR tab on user card
+#
+AnxhrContract = Employment contract
+AnxhrNewContract = New contract
+AnxhrNoContract = No employment contract recorded
+AnxhrOpenEnded = open-ended
+AnxhrEmploymentPeriod = Employment period
+AnxhrWeeklyHours = Weekly hours
+AnxhrEmploymentType = Employment type
+AnxhrEmploymentFulltime = Full-time
+AnxhrEmploymentParttime = Part-time
+AnxhrEmploymentMarginal = Marginal employment
+AnxhrEmploymentApprentice = Apprentice
+AnxhrEmploymentFreelancer = Freelancer
+AnxhrTimeModel = Working time model
+AnxhrCollectiveAgreement = Collective agreement
+AnxhrProbationEnd = End of probation
+AnxhrFixedTermEnd = End of fixed term
+AnxhrNoOpenDeadline = No open deadline
+AnxhrDeadlineTypeProbationEnd = End of probation period
+AnxhrDeadlineTypeFixedTermEnd = End of fixed-term contract
+AnxhrDeadlineTypeContractEnd = End of employment
+AnxhrDeadlineTypeCertificate = Certificate expiry
+AnxhrDeadlineTypePermit = Permit expiry
+AnxhrDeadlineTypeReview = Employee review
+AnxhrDeadlineTypeCustom = Other deadline
+AnxhrEmergencyContacts = Emergency contacts
+AnxhrRelation = Relationship
+AnxhrNoEmergencyContact = No emergency contact recorded
+AnxhrDeleteEmergencyContact = Delete emergency contact
+AnxhrConfirmDeleteEmergencyContact = Are you sure you want to delete this emergency contact?
+AnxhrEquipmentAndAccess = Equipment and access
+AnxhrNewHandover = New handover
+AnxhrNoOpenHandover = No equipment or access handed over
+AnxhrHandoverCatHardware = Hardware
+AnxhrHandoverCatKey = Key
+AnxhrHandoverCatToken = Token or badge
+AnxhrHandoverCatAccess = System access
+AnxhrHandoverCatOther = Other
+AnxhrChecklists = Checklists
+AnxhrNoChecklist = No checklist
+AnxhrChecklistTypeOnboarding = Onboarding
+AnxhrChecklistTypeOffboarding = Offboarding
+AnxhrChecklistTypeTransfer = Transfer
+AnxhrTimeThisMonth = Time this month
+AnxhrNoTimeData = No time data for this month
+AnxhrWorked = Worked
+AnxhrTarget = Target
+AnxhrBalance = Balance
+AnxhrProgress = Progress
+AnxhrDetails = Details
+
+#
+# Expense report integration
+#
+AnxhrTravelDiet = Business trip (Austria)
+AnxhrTravelDietPlaceholder = Travel allowance calculation will be available here.
+
+#
+# Working time law violations (used by TimeEngine)
+#
+AnxhrViolationBreakMissing = Break of 30 minutes missing (working time over 6 hours)
+AnxhrViolationMaxDaily10h = Daily normal working time of 10 hours exceeded
+AnxhrViolationMaxDaily12h = Maximum daily working time of 12 hours exceeded
+AnxhrViolationRest11h = Daily rest period of 11 hours not respected
+AnxhrViolationHolidayWork = Work on a public holiday or Sunday
+AnxhrViolationOpenEntry = Open entry (clock-out missing)
+AnxhrViolationOrderInvalid = Invalid order of time entries
+AnxhrViolationMaxWeekly60h = Maximum weekly working time of 60 hours exceeded
