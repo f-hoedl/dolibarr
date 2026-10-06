@@ -81,6 +81,10 @@ $selfurl = $_SERVER['PHP_SELF'].'?id='.((int) $object->id);
  */
 
 if ($action == 'generate' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+	// An approved or exported month is a legal record: only HR may regenerate it
+	if (in_array((int) $object->status, array(TimePeriod::STATUS_APPROVED, TimePeriod::STATUS_EXPORTED), true) && !$user->hasRight('anxhr', 'time', 'admin')) {
+		accessforbidden();
+	}
 	// Open months are recomputed first so the sheet shows current totals (approved months are locked)
 	if (!in_array((int) $object->status, array(TimePeriod::STATUS_APPROVED, TimePeriod::STATUS_EXPORTED), true)) {
 		$object->recomputeBalances($user);

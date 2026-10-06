@@ -414,9 +414,10 @@ class TimePeriod extends CommonObject
 			$res = -1;
 		}
 		if ($res > 0) {
-			// Monthly sheet of the approved month (AZG paragraph 26): never blocks the approval
-			$this->generateSheetAfterApproval($approver);
 			$this->db->commit();
+			// Monthly sheet of the approved month (AZG paragraph 26) after the commit, so a failure in the
+			// PDF or vault step can never leave the approval or the vault row in a half written state
+			$this->generateSheetAfterApproval($approver);
 			return 1;
 		}
 		$this->db->rollback();

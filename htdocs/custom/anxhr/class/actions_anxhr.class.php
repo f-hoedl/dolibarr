@@ -261,6 +261,9 @@ class ActionsAnxhr extends CommonHookActions
 	{
 		$this->results = array();
 		$file = isset($parameters['original_file']) ? str_replace('\\', '/', (string) $parameters['original_file']) : '';
+		// Normalize '/./' and '//' so the vault check cannot be bypassed with a cosmetic path
+		$file = preg_replace('/\/(\.\/)+/', '/', $file);
+		$file = preg_replace('/\/{2,}/', '/', $file);
 		if (isset($parameters['modulepart']) && $parameters['modulepart'] == 'anxhr' && preg_match('/\/anxhr\/vault(\/|$)/', $file)) {
 			dol_syslog('ActionsAnxhr::checkSecureAccess access to vault file through document.php refused', LOG_WARNING);
 			$this->results = array('original_file' => DOL_DATA_ROOT.'/anxhr/vault_access_refused_'.bin2hex(random_bytes(8)));
