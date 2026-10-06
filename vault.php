@@ -373,7 +373,7 @@ if (empty(anxhrVaultGetMasterKeys())) {
 if ($action == 'delete' && $canadmin && $id > 0) {
 	$doc = new VaultDoc($db);
 	if ($doc->fetch($id) > 0 && (int) $doc->status === VaultDoc::STATUS_ACTIVE) {
-		print $form->formconfirm($selfurl.'?id='.((int) $doc->id), $langs->trans('AnxhrVaultDelete'), $langs->trans('AnxhrVaultConfirmDelete', $doc->ref.' - '.$doc->filename_original), 'confirm_delete', '', 0, 0);
+		print $form->formconfirm($selfurl.'?id='.((int) $doc->id), $langs->trans('AnxhrVaultDelete'), $langs->trans('AnxhrVaultConfirmDelete', dol_escape_htmltag($doc->ref.' - '.$doc->filename_original)), 'confirm_delete', '', 0, 0);
 	}
 }
 
