@@ -572,4 +572,10 @@ UPDATE llx_const SET name = __ENCRYPT('ACCOUNTANCY_AUXACCOUNT_USE_SEARCH_TO_SELE
 
 ALTER TABLE llx_adherent MODIFY COLUMN societe VARCHAR(128);
 
+-- Fix Austrian public holidays (ARG section 7): add Epiphany, Whit Monday instead of Whit Sunday, remove wrong 1 June entry, 24.12. and 31.12. are not statutory holidays
+INSERT INTO llx_c_hrm_public_holiday (code, entity, fk_country, dayrule, year, month, day, active) VALUES('AT-EPIPHANY', 1, 41, '', 0, 1, 6, 1);
+UPDATE llx_c_hrm_public_holiday SET dayrule = 'pentecotemonday' WHERE code = 'AT-PENTECOST' AND dayrule = 'pentecost';
+DELETE FROM llx_c_hrm_public_holiday WHERE code = 'AT-KONEGIE';
+UPDATE llx_c_hrm_public_holiday SET active = 0 WHERE code IN ('AT-24DEC', 'AT-Silvester');
+
 -- end of migration
