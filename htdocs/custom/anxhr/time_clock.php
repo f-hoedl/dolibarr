@@ -76,47 +76,18 @@ $yesterday = TimeEntry::timestampToDay(TimeEntry::dayToTimestamp($today) - 12 * 
  */
 
 if ($action == 'clock' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-	$state = TimeEntry::getLastStateForUser($db, $user->id);
-	$allowed = TimeEntry::getNextActions($state);
-	$last = TimeEntry::getLastEntryForUser($db, $user->id);
-	// Locked days (approved or exported periods) cannot receive new entries: today, and for a running shift its start day.
-	$tdaylock = new TimeDay($db);
-	$lockdays = array($today);
-	if ($state !== 'out' && !empty($last)) {
-		$lockdays[] = TimeEntry::timestampToDay($last['ts']);
-	}
-	$daylocked = false;
-	foreach (array_unique($lockdays) as $lockday) {
-		$lockrow = $tdaylock->fetchRowForUserDay($user->id, $lockday);
-		if (is_array($lockrow) && !empty($lockrow['locked'])) {
-			$daylocked = true;
-		}
-	}
-	if ($daylocked) {
+	// Same rules as the PWA/API: see TimeEntry::clockForUser()
+	$res = TimeEntry::clockForUser($db, $user, $type, $homeoffice, 'web', $now);
+	if ($res['code'] === 'DayLocked') {
 		setEventMessages($langs->trans('AnxhrErrorDayLocked'), null, 'errors');
-	} elseif (!in_array($type, $allowed, true)) {
+	} elseif ($res['code'] === 'ActionNotAllowed') {
 		setEventMessages($langs->trans('AnxhrErrorActionNotAllowed'), null, 'errors');
-	} elseif (!empty($last) && $last['type'] === $type && ($now - $last['ts']) < 60) {
-		// Double click protection: same action within one minute is ignored.
+	} elseif ($res['code'] === 'AlreadyRecorded') {
 		setEventMessages($langs->trans('AnxhrClockAlreadyRecorded'), null, 'warnings');
+	} elseif ($res['result'] > 0) {
+		setEventMessages($langs->trans('AnxhrClockRecorded', anxhrTimeEntryTypeLabel($type, $langs), anxhrPrintDateTz($now, 'hour')), null, 'mesgs');
 	} else {
-		$entry = new TimeEntry($db);
-		$entry->fk_user = $user->id;
-		$entry->entry_type = $type;
-		$entry->entry_datetime = $now;
-		$entry->homeoffice = $homeoffice ? 1 : 0;
-		$entry->source = 'web';
-		$entry->ip = anxhrTimeClientIp();
-		$entry->status = TimeEntry::STATUS_ACTIVE;
-		if ($entry->create($user) > 0) {
-			$tday = new TimeDay($db);
-			// A shift belongs to the day of its clock in: recompute yesterday too (night shifts).
-			$tday->recomputeForUserDay($user, $user->id, $yesterday);
-			$tday->recomputeForUserDay($user, $user->id, $today);
-			setEventMessages($langs->trans('AnxhrClockRecorded', anxhrTimeEntryTypeLabel($type, $langs), anxhrPrintDateTz($now, 'hour')), null, 'mesgs');
-		} else {
-			setEventMessages($entry->error, $entry->errors, 'errors');
-		}
+		setEventMessages($res['error'], null, 'errors');
 	}
 	header('Location: '.$_SERVER['PHP_SELF']);
 	exit;
