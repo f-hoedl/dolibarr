@@ -128,6 +128,15 @@ class HrChecklistTemplate extends CommonObject
 		if ($this->status === null || $this->status === '') {
 			$this->status = self::STATUS_ENABLED;
 		}
+		if (empty($this->ref)) {
+			// Generate a code from the type and a counter, so a template can be saved without typing a code
+			$prefix = strtoupper(substr((string) $this->template_type, 0, 3));
+			$sql = "SELECT COUNT(rowid) as nb FROM ".$this->db->prefix().$this->table_element;
+			$sql .= " WHERE entity IN (".getEntity($this->element).")";
+			$resql = $this->db->query($sql);
+			$obj = ($resql ? $this->db->fetch_object($resql) : null);
+			$this->ref = ($prefix ? $prefix : 'TPL').'-'.(($obj ? (int) $obj->nb : 0) + 1);
+		}
 		$this->db->begin();
 		$result = $this->createCommon($user, 1);
 		if ($result > 0 && !$notrigger && $this->call_trigger('ANXHR_CHECKLIST_TEMPLATE_CREATE', $user) < 0) {

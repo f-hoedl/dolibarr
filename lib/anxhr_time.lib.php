@@ -66,6 +66,26 @@ function anxhrTimeParseDuration($str)
 }
 
 /**
+ * Parse a decimal number typed with comma or dot as decimal separator ("1,5", "1.5", "35,30").
+ * Thousand separators are not supported (rates and hours never need them).
+ *
+ * @param	string	$str	Input
+ * @return	float|null		Number or null if empty / invalid
+ */
+function anxhrTimeParseNumber($str)
+{
+	$str = str_replace(array(' ', "\xc2\xa0"), '', trim((string) $str));
+	if ($str === '') {
+		return null;
+	}
+	$str = str_replace(',', '.', $str);
+	if (!preg_match('/^-?\d*\.?\d+$/', $str)) {
+		return null;
+	}
+	return (float) $str;
+}
+
+/**
  * Check a clock time "HH:MM".
  *
  * @param	string	$str	Input
