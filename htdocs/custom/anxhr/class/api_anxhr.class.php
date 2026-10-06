@@ -118,7 +118,7 @@ class Anxhr extends DolibarrApi
 			}
 			throw new RestException(409, $result['code']);
 		}
-		$out = $this->buildTimeSummary($user);
+		$out = array_merge(array('id' => (int) $user->id, 'login' => $user->login, 'name' => $user->getFullName(null)), $this->buildTimeSummary($user));
 		$out['result'] = $result['code'];
 		$out['entry_id'] = $result['id'];
 		return $out;

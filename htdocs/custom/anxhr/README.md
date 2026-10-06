@@ -46,3 +46,21 @@ Planned, not implemented yet: `ANXHR_VACATION_IN_HOURS` (vacation entitlement in
 ## Licenses
 
 GPLv3 or (at your option) any later version. See <https://www.gnu.org/licenses/>.
+
+## Employee PWA
+
+A mobile web app for employees is served from `/custom/anxhr/pwa/` (no build step, plain HTML/JS/CSS).
+It uses the REST API endpoints of this module (`/api/index.php/anxhr/...`, class `class/api_anxhr.class.php`):
+
+- `GET anxhr/me`: state (`in`/`break`/`out`), worked/target minutes today, month balance, today's entries, last 7 days.
+- `POST anxhr/clock` `{type: in|out|break_start|break_end, homeoffice: 0|1, client_time?: 'Y-m-d H:i:s'}`: same rules as `time_clock.php` (shared `TimeEntry::clockForUser()`), entries get source `pwa`. `client_time` (company time zone) is used for actions queued offline, accepted up to 48 h back. Answers 409 `ActionNotAllowed` / `DayLocked`.
+- `GET anxhr/vault`: own documents visible to the employee (unread flag). Downloads stay on `vault.php` / `vault_download.php` with the browser session (the download link needs the session CSRF token, which an API key cannot provide).
+
+Requirements: module *API REST* enabled, rights *anxhr time own* (clock) and *anxhr vault own* (documents).
+
+Sign in:
+- With login and password: the PWA calls the core `POST /api/index.php/login`. This core API is disabled by default; enable it with the constant `API_ENABLE_LOGIN_API = 1` (Home > Setup > Other setup).
+- SSO users (or when the login API stays disabled): generate an API key on the own user card and enter it under "Mit API-Schlüssel anmelden". The key is stored in the browser's localStorage; "Abmelden" removes it.
+
+Install to home screen: open `https://<your-dolibarr>/custom/anxhr/pwa/` in the phone browser (HTTPS required for the service worker), then Android/Chrome: menu > "Zum Startbildschirm hinzufügen"; iOS/Safari: share button > "Zum Home-Bildschirm".
+Offline: the app shell is cached; clock actions done offline are queued in localStorage and sent with their original time when the device is online again.
